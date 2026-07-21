@@ -48,58 +48,89 @@ def init_db():
 conn, cursor = init_db()
 
 # Sayfa Konfigürasyonu ve Profesyonel Arayüz Stilleri
-st.set_page_config(page_title="Dinamik Vinç | Operasyon Yönetim Sistemi", page_icon="🏗️", layout="wide")
+st.set_page_config(page_title="Dinamik Vinç | Pro Yönetim Sistemi", page_icon="🏗️", layout="wide")
 
 st.markdown("""
     <style>
+    /* Genel Arka Plan ve Tipografi */
     .main-header {
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 800;
         color: #ff9800;
         margin-bottom: 0px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
     }
     .sub-header {
-        font-size: 14px;
-        color: #888888;
-        margin-bottom: 20px;
+        font-size: 13px;
+        color: #aaaaaa;
+        margin-bottom: 25px;
+        letter-spacing: 0.3px;
     }
+    /* Buton ve Kart Tasarımları */
     .stButton>button {
         width: 100%;
-        border-radius: 6px;
-        font-weight: bold;
-        transition: 0.2s;
+        border-radius: 8px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        border: 1px solid #444444;
     }
-    .logo-container {
-        text-align: center;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #333333;
-        margin-bottom: 15px;
+    .stButton>button:hover {
+        border-color: #ff9800;
+        color: #ff9800;
+    }
+    /* Sidebar Güzelleştirmeleri */
+    [data-testid="stSidebar"] {
+        background-color: #121212;
+        border-right: 1px solid #262626;
+    }
+    .pro-badge {
+        background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- SOL MENÜ (LOGO VE MENÜ SEÇİMİ) ---
+# --- PRO SOL MENÜ (LOGO VE ÖZEL SEKME YAPISI) ---
 with st.sidebar:
-    # Gönderdiğiniz logonun projemize otomatik kaydedilip sol menüde şık durması için:
     logo_path = "logo.png"
     if os.path.exists(logo_path):
         st.image(logo_path, use_container_width=True)
     else:
-        # Eğer henüz logo.png olarak kaydetmediyseniz geçici olarak yüklenen görseli işleyelim:
-        pass
+        st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center;"><span class="pro-badge">PRO EDITION v3.2</span></div>', unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
     
-    menu = ["📊 Cari & Alacak Özeti", "📝 Yeni İş / Operasyon", "📂 İş Geçmişi & Tahsilat", "👥 Müşteri Yönetimi"]
-    secim = st.radio("📋 MENÜ SEÇİMİ", menu)
+    # Modern ve Şık Menü Seçenekleri
+    menu_options = {
+        "📊 Cari & Alacak Özeti": "Genel Finans ve Alacak Takibi",
+        "📝 Yeni İş / Operasyon": "Saha ve Kiralama Girişi",
+        "📂 İş Geçmişi & Tahsilat": "Arşiv, Ödeme ve Dekontlar",
+        "👥 Müşteri Yönetimi": "Firma ve İletişim Rehberi"
+    }
+    
+    secim = st.radio("📋 OPERASYONEL MENÜ", list(menu_options.keys()), format_func=lambda x: f"{x}")
 
     st.sidebar.divider()
-    st.sidebar.info("💡 **İpucu:** Müşterilere borç hatırlatması göndermek için Cari Özet ekranındaki hazır WhatsApp şablonunu kullanabilirsiniz.")
+    st.sidebar.markdown("""
+        <div style='background-color: #1a1a1a; padding: 12px; border-radius: 6px; border-left: 3px solid #ff9800;'>
+            <p style='font-size: 11px; color: #ccc; margin: 0;'>💡 <b>Hızlı İpucu:</b> Cari özet ekranından tek tıkla WhatsApp borç hatırlatması oluşturabilirsiniz.</p>
+        </div>
+    """, unsafe_allow_html=True)
 
 # Üst Başlık Alanı
 st.markdown('<p class="main-header">🏗️ DİNAMİK VİNÇ & OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Profesyonel Kiralama, Cari Takip ve Saha Yönetim Sistemi</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="sub-header">Aktif Modül: <b style="color: #ff9800;">{secim}</b> — Profesyonel Saha ve Finans Paneli</p>', unsafe_allow_html=True)
 
 # --- 1. CARİ ÖZET / ALACAK VERECEK ---
 if secim == "📊 Cari & Alacak Özeti":
