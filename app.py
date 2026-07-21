@@ -70,12 +70,6 @@ st.markdown("""
         font-weight: bold;
         transition: 0.2s;
     }
-    .metric-card {
-        background-color: #1e1e1e;
-        border: 1px solid #333333;
-        padding: 15px;
-        border-radius: 8px;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -143,9 +137,18 @@ elif secim == "📝 Yeni İş / Operasyon":
             santiye = st.text_input("Şantiye Adı / Konum")
             vinc = st.text_input("Vinç / Plaka (Örn: 34 VNC 01)")
             operator = st.text_input("Operatör Adı")
+            
         with col2:
-            sure = st.number_input("Süre (Saat veya Gün)", min_value=0.1, value=1.0, step=0.5)
-            birim_fiyat = st.number_input("Birim Fiyat (TL)", min_value=0.0, value=0.0, step=100.0)
+            # Çözüm: Saatlik mi Günlük mü Seçimi
+            ucret_tipi = st.selectbox("Çalışma / Ücret Tipi", ["Saatlik Çalışma", "Günlük Çalışma (Yevmiye)"])
+            
+            if ucret_tipi == "Saatlik Çalışma":
+                sure = st.number_input("Çalışma Süresi (Saat)", min_value=0.5, value=1.0, step=0.5)
+                birim_fiyat = st.number_input("Saatlik Birim Fiyat (TL)", min_value=0.0, value=0.0, step=100.0)
+            else:
+                sure = st.number_input("Çalışma Süresi (Gün)", min_value=1.0, value=1.0, step=1.0)
+                birim_fiyat = st.number_input("Günlük Yevmiye Fiyatı (TL)", min_value=0.0, value=0.0, step=500.0)
+                
             kdv_tipi = st.selectbox("Vergi / KDV Hesaplama", ["KDV Hariç (Düz Tutar)", "KDV Dahil (%20)", "İnşaat Tevkifatlı (5/10)"])
             odenen = st.number_input("Peşin Alınan Ödeme (TL)", min_value=0.0, value=0.0, step=100.0)
             
@@ -164,6 +167,9 @@ elif secim == "📝 Yeni İş / Operasyon":
         if st.button("🚀 İşi ve Operasyonu Kaydet", type="primary"):
             temel_tutar = sure * birim_fiyat
             
+            # Açıklamaya süre tipini de ekleyelim ki geçmişte saat mi gün mü olduğu net görünsün
+            tam_aciklama = f"[{ucret_tipi} - {sure} { 'Saat' if 'Saatlik' in ucret_tipi else 'Gün' }] {aciklama}"
+            
             if kdv_tipi == "KDV Dahil (%20)":
                 toplam_tutar = temel_tutar * 1.20
             elif kdv_tipi == "İnşaat Tevkifatlı (5/10)":
@@ -178,7 +184,7 @@ elif secim == "📝 Yeni İş / Operasyon":
             cursor.execute("""
                 INSERT INTO isler (musteri_id, tarih, santiye, vinc_plaka, operator, aciklama, sure, birim_fiyat, kdv_durumu, toplam_tutar, odenen, kalan, foto_yolu)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (musteri_id, tarih, santiye, vinc, operator, aciklama, sure, birim_fiyat, kdv_tipi, toplam_tutar, odenen, kalan, foto_yolu))
+            """, (musteri_id, tarih, santiye, vinc, operator, tam_aciklama, sure, birim_fiyat, kdv_tipi, toplam_tutar, odenen, kalan, foto_yolu))
             conn.commit()
             st.success(f"İş başarıyla kaydedildi! Toplam Tutar: {toplam_tutar:,.2f} TL | Kalan Bakiye: {kalan:,.2f} TL")
 
