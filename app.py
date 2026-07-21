@@ -17,7 +17,6 @@ def init_db():
         )
     """)
     
-    # İşler tablosu yoksa oluştur
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS isler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,44 +37,61 @@ def init_db():
         )
     """)
     
-    # Eskiden kalan tablolarda kdv_durumu sütunu yoksa otomatik ekle (Hata almamak için)
     try:
         cursor.execute("ALTER TABLE isler ADD COLUMN kdv_durumu TEXT")
     except sqlite3.OperationalError:
-        pass # Zaten varsa hata verme, devam et
+        pass 
         
     conn.commit()
     return conn, cursor
 
 conn, cursor = init_db()
 
-# Sayfa Konfigürasyonu ve Sektörel Tasarım
+# Sayfa Konfigürasyonu ve Profesyonel Arayüz Stilleri
 st.set_page_config(page_title="Vinç & Operasyon Yönetim Sistemi", page_icon="🏗️", layout="wide")
 
 st.markdown("""
     <style>
     .main-header {
-        font-size: 22px;
-        font-weight: bold;
+        font-size: 24px;
+        font-weight: 800;
         color: #ff9800;
-        margin-bottom: 10px;
+        margin-bottom: 0px;
+        letter-spacing: 0.5px;
+    }
+    .sub-header {
+        font-size: 14px;
+        color: #888888;
+        margin-bottom: 20px;
     }
     .stButton>button {
         width: 100%;
-        border-radius: 5px;
+        border-radius: 6px;
         font-weight: bold;
+        transition: 0.2s;
+    }
+    .metric-card {
+        background-color: #1e1e1e;
+        border: 1px solid #333333;
+        padding: 15px;
+        border-radius: 8px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-header">🏗️ VİNÇ KİRALAMA & SAHA OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
+# Üst Başlık Alanı
+st.markdown('<p class="main-header">🏗️ VİNÇ & SAHA OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Profesyonel Kiralama, Cari Takip ve Saha Yönetim Sistemi</p>', unsafe_allow_html=True)
 
-# Menü / Sekmeler
-menu = ["Alacak / Borç (Cari Özet)", "Yeni İş Girişi", "İş Geçmişi & Tahsilat", "Müşteri Yönetimi"]
-secim = st.sidebar.selectbox("📋 MENÜ", menu)
+# Modern Menü / Sekmeler (Sidebar)
+menu = ["📊 Cari & Alacak Özeti", "📝 Yeni İş / Operasyon", "📂 İş Geçmişi & Tahsilat", "👥 Müşteri Yönetimi"]
+secim = st.sidebar.radio("📋 MENÜ SEÇİMİ", menu)
+
+st.sidebar.divider()
+st.sidebar.info("💡 **İpucu:** Müşterilere borç hatırlatması göndermek için Cari Özet ekranındaki hazır WhatsApp şablonunu kullanabilirsiniz.")
 
 # --- 1. CARİ ÖZET / ALACAK VERECEK ---
-if secim == "Alacak / Borç (Cari Özet)":
+if secim == "📊 Cari & Alacak Özeti":
     st.header("📊 Genel Alacak ve Cari Durum")
     
     query = """
@@ -103,12 +119,12 @@ if secim == "Alacak / Borç (Cari Özet)":
                 
                 whatsapp_text = f"Sayın {unvan}, {datetime.now().strftime('%d.%m.%Y')} tarihi itibarıyla güncel kalan borç/bakiye tutarınız: {kalan:,.2f} TL'dir. İyi çalışmalar dileriz."
                 st.code(whatsapp_text, language="text")
-                st.caption("Yukarıdaki metni kopyalayarak müşteriye WhatsApp üzerinden borç hatırlatması gönderebilirsiniz.")
+                st.caption("📲 Yukarıdaki metni kopyalayarak müşteriye WhatsApp üzerinden borç hatırlatması gönderebilirsiniz.")
     else:
         st.info("Henüz kayıtlı müşteri veya iş bulunmuyor.")
 
 # --- 2. YENİ İŞ / OPERASYON GİRİŞİ ---
-elif secim == "Yeni İş Girişi":
+elif secim == "📝 Yeni İş / Operasyon":
     st.header("📝 Yeni İş / Operasyon Kaydı")
     
     cursor.execute("SELECT id, unvan FROM musteriler")
@@ -118,7 +134,7 @@ elif secim == "Yeni İş Girişi":
         st.warning("⚠️ Önce sol menüden 'Müşteri Yönetimi' kısmına giderek bir müşteri eklemelisiniz!")
     else:
         musteri_dict = {m[1]: m[0] for m in musteriler}
-        secilen_musteri_adi = st.selectbox("Müşteri Seç", list(musteri_dict.keys()))
+        secilen_musteri_adi = st.selectbox("Müşteri Firma Seç", list(musteri_dict.keys()))
         musteri_id = musteri_dict[secilen_musteri_adi]
         
         col1, col2 = st.columns(2)
@@ -142,9 +158,10 @@ elif secim == "Yeni İş Girişi":
             foto_yolu = os.path.join("uploads", uploaded_file.name)
             with open(foto_yolu, "wb") as f:
                 f.write(uploaded_file.getbuffer())
-            st.success("Fotoğraf başarıyla yüklendi!")
+            st.success("Saha belgesi başarıyla yüklendi!")
 
-        if st.button("🚀 İşi Kaydet", type="primary"):
+        st.markdown("")
+        if st.button("🚀 İşi ve Operasyonu Kaydet", type="primary"):
             temel_tutar = sure * birim_fiyat
             
             if kdv_tipi == "KDV Dahil (%20)":
@@ -166,7 +183,7 @@ elif secim == "Yeni İş Girişi":
             st.success(f"İş başarıyla kaydedildi! Toplam Tutar: {toplam_tutar:,.2f} TL | Kalan Bakiye: {kalan:,.2f} TL")
 
 # --- 3. İŞ GEÇMİŞİ & TAHSİLAT ---
-elif secim == "İş Geçmişi & Tahsilat":
+elif secim == "📂 İş Geçmişi & Tahsilat":
     st.header("📂 Geçmiş İşler ve Tahsilat Yönetimi")
     
     query = """
@@ -213,17 +230,17 @@ elif secim == "İş Geçmişi & Tahsilat":
                         st.warning("İş silindi!")
                         st.rerun()
     else:
-        st.info("Kayıtlı iş bulunvuyor.")
+        st.info("Kayıtlı iş bulunmuyor.")
 
 # --- 4. MÜŞTERİ YÖNETİMİ ---
-elif secim == "Müşteri Yönetimi":
+elif secim == "👥 Müşteri Yönetimi":
     st.header("👥 Müşteri / Firma Yönetimi")
     
     with st.form("musteri_form"):
         unvan = st.text_input("Firma / Müşteri Unvanı")
         telefon = st.text_input("Telefon Numarası")
         adres = st.text_area("Adres")
-        submitted = st.form_submit_button("➕ Müşteri Kaydet")
+        submitted = st.form_submit_button("➕ Yeni Müşteri Kaydet")
         
         if submitted:
             if unvan.strip():
@@ -247,7 +264,7 @@ elif secim == "Müşteri Yönetimi":
             with col_info:
                 st.markdown(f"**🏢 {m_unvan}** | Tel: {m_tel} \n\n *Adres:* {m_adres}")
             with col_btn:
-                if st.button("🗑️ Müşteriyi Sil", key=f"m_sil_{m_id}"):
+                if st.button("🗑️ Sil", key=f"m_sil_{m_id}"):
                     cursor.execute("DELETE FROM isler WHERE musteri_id = ?", (m_id,))
                     cursor.execute("DELETE FROM musteriler WHERE id = ?", (m_id,))
                     conn.commit()
