@@ -3,7 +3,7 @@ import sqlite3
 import os
 from datetime import datetime
 
-# Veritabanı Bağlantısı ve Kurulumu
+# Veritabanı Bağlantısı ve Akıllı Tablo Güncelleme
 def init_db():
     conn = sqlite3.connect("vinc_takip.db", check_same_thread=False)
     cursor = conn.cursor()
@@ -17,6 +17,7 @@ def init_db():
         )
     """)
     
+    # İşler tablosu yoksa oluştur
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS isler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +37,13 @@ def init_db():
             FOREIGN KEY(musteri_id) REFERENCES musteriler(id) ON DELETE CASCADE
         )
     """)
+    
+    # Eskiden kalan tablolarda kdv_durumu sütunu yoksa otomatik ekle (Hata almamak için)
+    try:
+        cursor.execute("ALTER TABLE isler ADD COLUMN kdv_durumu TEXT")
+    except sqlite3.OperationalError:
+        pass # Zaten varsa hata verme, devam et
+        
     conn.commit()
     return conn, cursor
 
@@ -205,7 +213,7 @@ elif secim == "İş Geçmişi & Tahsilat":
                         st.warning("İş silindi!")
                         st.rerun()
     else:
-        st.info("Kayıtlı iş bulunmuyor.")
+        st.info("Kayıtlı iş bulunvuyor.")
 
 # --- 4. MÜŞTERİ YÖNETİMİ ---
 elif secim == "Müşteri Yönetimi":
