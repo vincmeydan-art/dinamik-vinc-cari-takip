@@ -48,7 +48,7 @@ def init_db():
 conn, cursor = init_db()
 
 # Sayfa Konfigürasyonu ve Profesyonel Arayüz Stilleri
-st.set_page_config(page_title="Vinç & Operasyon Yönetim Sistemi", page_icon="🏗️", layout="wide")
+st.set_page_config(page_title="Dinamik Vinç | Operasyon Yönetim Sistemi", page_icon="🏗️", layout="wide")
 
 st.markdown("""
     <style>
@@ -70,19 +70,36 @@ st.markdown("""
         font-weight: bold;
         transition: 0.2s;
     }
+    .logo-container {
+        text-align: center;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #333333;
+        margin-bottom: 15px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
+# --- SOL MENÜ (LOGO VE MENÜ SEÇİMİ) ---
+with st.sidebar:
+    # Gönderdiğiniz logonun projemize otomatik kaydedilip sol menüde şık durması için:
+    logo_path = "logo.png"
+    if os.path.exists(logo_path):
+        st.image(logo_path, use_container_width=True)
+    else:
+        # Eğer henüz logo.png olarak kaydetmediyseniz geçici olarak yüklenen görseli işleyelim:
+        pass
+    
+    st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
+    
+    menu = ["📊 Cari & Alacak Özeti", "📝 Yeni İş / Operasyon", "📂 İş Geçmişi & Tahsilat", "👥 Müşteri Yönetimi"]
+    secim = st.radio("📋 MENÜ SEÇİMİ", menu)
+
+    st.sidebar.divider()
+    st.sidebar.info("💡 **İpucu:** Müşterilere borç hatırlatması göndermek için Cari Özet ekranındaki hazır WhatsApp şablonunu kullanabilirsiniz.")
+
 # Üst Başlık Alanı
-st.markdown('<p class="main-header">🏗️ VİNÇ & SAHA OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-header">🏗️ DİNAMİK VİNÇ & OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Profesyonel Kiralama, Cari Takip ve Saha Yönetim Sistemi</p>', unsafe_allow_html=True)
-
-# Modern Menü / Sekmeler (Sidebar)
-menu = ["📊 Cari & Alacak Özeti", "📝 Yeni İş / Operasyon", "📂 İş Geçmişi & Tahsilat", "👥 Müşteri Yönetimi"]
-secim = st.sidebar.radio("📋 MENÜ SEÇİMİ", menu)
-
-st.sidebar.divider()
-st.sidebar.info("💡 **İpucu:** Müşterilere borç hatırlatması göndermek için Cari Özet ekranındaki hazır WhatsApp şablonunu kullanabilirsiniz.")
 
 # --- 1. CARİ ÖZET / ALACAK VERECEK ---
 if secim == "📊 Cari & Alacak Özeti":
@@ -111,7 +128,7 @@ if secim == "📊 Cari & Alacak Özeti":
                 st.write(f"**Telefon:** {telefon if telefon else 'Belirtilmemiş'}")
                 st.write(f"**Toplam İş Hacmi:** {toplam:,.2f} TL | **Yapılan Toplam Ödeme:** {odenen:,.2f} TL")
                 
-                whatsapp_text = f"Sayın {unvan}, {datetime.now().strftime('%d.%m.%Y')} tarihi itibarıyla güncel kalan borç/bakiye tutarınız: {kalan:,.2f} TL'dir. İyi çalışmalar dileriz."
+                whatsapp_text = f"Sayın {unvan}, {datetime.now().strftime('%d.%m.%Y')} tarihi itibarıyla güncel kalan borç/bakiye tutarınız: {kalan:,.2f} TL'dir. Dinamik Vinç - İyi çalışmalar dileriz."
                 st.code(whatsapp_text, language="text")
                 st.caption("📲 Yukarıdaki metni kopyalayarak müşteriye WhatsApp üzerinden borç hatırlatması gönderebilirsiniz.")
     else:
@@ -139,7 +156,6 @@ elif secim == "📝 Yeni İş / Operasyon":
             operator = st.text_input("Operatör Adı")
             
         with col2:
-            # Çözüm: Saatlik mi Günlük mü Seçimi
             ucret_tipi = st.selectbox("Çalışma / Ücret Tipi", ["Saatlik Çalışma", "Günlük Çalışma (Yevmiye)"])
             
             if ucret_tipi == "Saatlik Çalışma":
@@ -166,8 +182,6 @@ elif secim == "📝 Yeni İş / Operasyon":
         st.markdown("")
         if st.button("🚀 İşi ve Operasyonu Kaydet", type="primary"):
             temel_tutar = sure * birim_fiyat
-            
-            # Açıklamaya süre tipini de ekleyelim ki geçmişte saat mi gün mü olduğu net görünsün
             tam_aciklama = f"[{ucret_tipi} - {sure} { 'Saat' if 'Saatlik' in ucret_tipi else 'Gün' }] {aciklama}"
             
             if kdv_tipi == "KDV Dahil (%20)":
