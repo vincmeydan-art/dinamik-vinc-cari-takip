@@ -2,7 +2,6 @@ import streamlit as st
 import sqlite3
 import os
 from datetime import datetime
-import pandas as pd
 
 # Veritabanı Bağlantısı ve Kurulumu
 def init_db():
@@ -64,7 +63,7 @@ st.markdown("""
 st.markdown('<p class="main-header">🏗️ VİNÇ KİRALAMA & SAHA OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
 
 # Menü / Sekmeler
-menu = ["Alacak / Borç (Cari Özet)", "Yeni İş Girişi", "İş Geçmişi & Tahsilat", "Müşteri Yönetimi", "Yedekleme & Rapor"]
+menu = ["Alacak / Borç (Cari Özet)", "Yeni İş Girişi", "İş Geçmişi & Tahsilat", "Müşteri Yönetimi"]
 secim = st.sidebar.selectbox("📋 MENÜ", menu)
 
 # --- 1. CARİ ÖZET / ALACAK VERECEK ---
@@ -94,7 +93,6 @@ if secim == "Alacak / Borç (Cari Özet)":
                 st.write(f"**Telefon:** {telefon if telefon else 'Belirtilmemiş'}")
                 st.write(f"**Toplam İş Hacmi:** {toplam:,.2f} TL | **Yapılan Toplam Ödeme:** {odenen:,.2f} TL")
                 
-                # Cari Ekstresini WhatsApp ile paylaşma metni oluşturma
                 whatsapp_text = f"Sayın {unvan}, {datetime.now().strftime('%d.%m.%Y')} tarihi itibarıyla güncel kalan borç/bakiye tutarınız: {kalan:,.2f} TL'dir. İyi çalışmalar dileriz."
                 st.code(whatsapp_text, language="text")
                 st.caption("Yukarıdaki metni kopyalayarak müşteriye WhatsApp üzerinden borç hatırlatması gönderebilirsiniz.")
@@ -141,11 +139,9 @@ elif secim == "Yeni İş Girişi":
         if st.button("🚀 İşi Kaydet", type="primary"):
             temel_tutar = sure * birim_fiyat
             
-            # KDV ve Tevkifat Mantığı
             if kdv_tipi == "KDV Dahil (%20)":
                 toplam_tutar = temel_tutar * 1.20
             elif kdv_tipi == "İnşaat Tevkifatlı (5/10)":
-                # 5/10 tevkifat kaba hesap mantığı
                 kdv = temel_tutar * 0.20
                 tevkifat_edilen_kdv = kdv / 2
                 toplam_tutar = temel_tutar + tevkifat_edilen_kdv
@@ -190,7 +186,6 @@ elif secim == "İş Geçmişi & Tahsilat":
                 col_tahsilat, col_sil = st.columns(2)
                 
                 with col_tahsilat:
-                    # Kısmi Ödeme / Tahsilat Ekleme Kutusu
                     tahsilat_miktari = st.number_input(f"Tahsilat Ekle (TL) [ID: {is_id}]", min_value=0.0, value=0.0, step=500.0, key=f"t_miktar_{is_id}")
                     if st.button(f"💵 Ödeme Al / Düş", key=f"t_btn_{is_id}"):
                         if tahsilat_miktari > 0:
@@ -202,7 +197,7 @@ elif secim == "İş Geçmişi & Tahsilat":
                             st.rerun()
                 
                 with col_sil:
-                    st.write("") # Boşluk
+                    st.write("") 
                     st.write("")
                     if st.button(f"🗑️ İşi Komple Sil", key=f"is_sil_{is_id}"):
                         cursor.execute("DELETE FROM isler WHERE id = ?", (is_id,))
@@ -253,33 +248,3 @@ elif secim == "Müşteri Yönetimi":
             st.divider()
     else:
         st.info("Henüz müşteri eklenmemiş.")
-
-# --- 5. YEDEKLEME & RAPOR ---
-elif secim == "Yedekleme & Rapor":
-    st.header("💾 Veri Yedekleme ve Excel Raporları")
-    st.write("Sistemde kayıtlı tüm iş geçmişinizi ve cari alacaklarınızı Excel tablosu olarak telefonunuza veya bilgisayarınıza indirebilirsiniz.")
-    
-    query = """
-        SELECT isler.id as Is_ID, musteriler.unvan as Musteri, isler.tarih as Tarih, 
-               isler.santiye as Santiye, isler.vinc_plaka as Vinc, isler.operator as Operator, 
-               isler.aciklama as Aciklama, isler.sure as Sure, isler.toplam_tutar as Toplam, 
-               isler.odenen as Odenen, isler.kalan as Kalan
-        FROM isler 
-        JOIN musteriler ON isler.musteri_id = musteriler.id
-    """
-    df = pd.read_sql(query, conn)
-    
-    if not df.empty:
-        st.dataframe(df)
-        
-        # Excel olarak indirme butonu
-        @st.cache_data
-        data = df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Tüm İşleri Excel/CSV Olarak İndir",
-            data=df.to_csv(index=False).encode('utf-8'),
-            file_name=f"vinc_takip_rapor_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime="text/csv",
-        )
-    else:
-        st.info("İndirilecek kayıtlı veri bulunmuyor.")
