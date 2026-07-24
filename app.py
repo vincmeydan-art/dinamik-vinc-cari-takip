@@ -73,7 +73,7 @@ if not st.session_state["giris_yapildi"]:
             
             if submitted:
                 # Varsayılan Bilgiler: Kullanıcı adı: admin, Şifre: 213155
-                if kullanici_adi == "admin" and sifre == "1234":
+                if kullanici_adi == "admin" and sifre == "213155":
                     st.session_state["giris_yapildi"] = True
                     st.success("Giriş başarılı! Yönlendiriliyorsunuz...")
                     st.rerun()
