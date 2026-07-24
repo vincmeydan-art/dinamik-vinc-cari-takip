@@ -37,6 +37,16 @@ def init_db():
             FOREIGN KEY(musteri_id) REFERENCES musteriler(id) ON DELETE CASCADE
         )
     """)
+
+    # Admin şifresini tutmak için tablo veya oturum tablosu kontrolü
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ayarlar (
+            anahtar TEXT PRIMARY KEY,
+            deger TEXT
+        )
+    """)
+    # Varsayılan admin şifresi yoksa ekle
+    cursor.execute("INSERT OR IGNORE INTO ayarlar (anahtar, deger) VALUES ('admin_sifre', '1234')")
     
     try:
         cursor.execute("ALTER TABLE isler ADD COLUMN kdv_durumu TEXT")
@@ -87,7 +97,10 @@ if not st.session_state["giris_yapildi"]:
                 submitted = st.form_submit_button("🔒 Yönetici Olarak Giriş Yap", use_container_width=True)
                 
                 if submitted:
-                    if kullanici_adi == "admin" and sifre == "1234":
+                    cursor.execute("SELECT deger FROM ayarlar WHERE anahtar = 'admin_sifre'")
+                    db_admin_sifre = cursor.fetchone()[0]
+                    
+                    if kullanici_adi == "admin" and sifre == db_admin_sifre:
                         st.session_state["giris_yapildi"] = True
                         st.session_state["giris_turu"] = "admin"
                         st.success("Yönetici girişi başarılı!")
@@ -242,14 +255,15 @@ with st.sidebar:
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.5</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.6</span></div>', unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     
     menu_options = {
         "📊 Cari & Alacak Özeti": "Genel Finans ve Alacak Takibi",
         "📝 Yeni İş / Operasyon": "Saha ve Kiralama Girişi",
         "📂 İş Geçmişi & Tahsilat": "Arşiv, Ödeme ve Dekontlar",
-        "👥 Müşteri Yönetimi": "Firma ve İletişim Rehberi"
+        "👥 Müşteri Yönetimi": "Firma ve İletişim Rehberi",
+        "⚙️ Admin Şifre Değiştir": "Yönetici Güvenlik Ayarları"
     }
     
     secim = st.radio("📋 OPERASYONEL MENÜ", list(menu_options.keys()))
@@ -460,3 +474,30 @@ elif secim == "👥 Müşteri Yönetimi":
             st.divider()
     else:
         st.info("Henüz müşteri eklenmemiş.")
+
+# --- 5. ADMIN ŞİFRE DEĞİŞTİRME ---
+elif secim == "⚙️ Admin Şifre Değiştir":
+    st.header("⚙️ Yönetici (Admin) Şifre Güncelleme")
+    st.write("Yönetici panelinize giriş yaptığınız şifreyi buradan güvenli bir şekilde değiştirebilirsiniz.")
+    
+    with st.form("admin_sifre_form"):
+        eski_sifre = st.text_input("Mevcut Yönetici Şifreniz", type="password")
+        yeni_sifre1 = st.text_input("Yeni Yönetici Şifresi", type="password")
+        yeni_sifre2 = st.text_input("Yeni Yönetici Şifresi (Tekrar)", type="password")
+        
+        sifre_guncelle_btn = st.form_submit_button("🔒 Yönetici Şifresini Güncelle")
+        
+        if sifre_guncelle_btn:
+            cursor.execute("SELECT deger FROM ayarlar WHERE anahtar = 'admin_sifre'")
+            gercek_eski_sifre = cursor.fetchone()[0]
+            
+            if eski_sifre != gercek_eski_sifre:
+                st.error("Mevcut şifrenizi hatalı girdiniz!")
+            elif not yeni_sifre1:
+                st.error("Yeni şifre boş olamaz!")
+            elif yeni_sifre1 != yeni_sifre2:
+                st.error("Yeni girdiğiniz şifreler birbiriyle eşleşmiyor!")
+            else:
+                cursor.execute("UPDATE ayarlar SET deger = ? WHERE anahtar = 'admin_sifre'", (yeni_sifre1,))
+                conn.commit()
+                st.success("Yönetici şifreniz başarıyla değiştirildi! Bir sonraki girişinizde yeni şifrenizi kullanabilirsiniz.")
