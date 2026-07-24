@@ -13,7 +13,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             unvan TEXT NOT NULL,
             telefon TEXT,
-            adres TEXT
+            adres TEXT,
+            sifre TEXT DEFAULT '1234'
         )
     """)
     
@@ -41,6 +42,11 @@ def init_db():
         cursor.execute("ALTER TABLE isler ADD COLUMN kdv_durumu TEXT")
     except sqlite3.OperationalError:
         pass 
+
+    try:
+        cursor.execute("ALTER TABLE musteriler ADD COLUMN sifre TEXT DEFAULT '1234'")
+    except sqlite3.OperationalError:
+        pass
         
     conn.commit()
     return conn, cursor
@@ -50,38 +56,141 @@ conn, cursor = init_db()
 # Sayfa Konfigürasyonu
 st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide")
 
-# Oturum Durumu (Login Kontrolü)
+# Oturum Durumu Kontrolleri
 if "giris_yapildi" not in st.session_state:
     st.session_state["giris_yapildi"] = False
+if "giris_turu" not in st.session_state:
+    st.session_state["giris_turu"] = None # "admin" veya "musteri"
+if "aktif_musteri_id" not in st.session_state:
+    st.session_state["aktif_musteri_id"] = None
+if "aktif_musteri_adi" not in st.session_state:
+    st.session_state["aktif_musteri_adi"] = ""
 
-# --- GİRİŞ EKRANI ---
+# --- GİRİŞ EKRANI (YÖNETİCİ & MÜŞTERİ SEÇİMLİ) ---
 if not st.session_state["giris_yapildi"]:
-    col1, col2, col3 = st.columns([1, 1.2, 1])
+    col1, col2, col3 = st.columns([1, 1.3, 1])
     with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style='background-color: #161616; padding: 30px; border-radius: 12px; border: 1px solid #333; text-align: center;'>
-                <h1 style='color: #ff9800; font-size: 28px; margin-bottom: 5px;'>🏗️ DİNAMİK VİNÇ</h1>
-                <p style='color: #888; font-size: 13px;'>Yetkili Operasyon ve Finans Paneli</p>
+            <div style='background-color: #161616; padding: 25px; border-radius: 12px; border: 1px solid #333; text-align: center;'>
+                <h1 style='color: #ff9800; font-size: 26px; margin-bottom: 5px;'>🏗️ DİNAMİK VİNÇ</h1>
+                <p style='color: #888; font-size: 13px;'>Operasyon ve Müşteri Portal Girişi</p>
             </div>
         """, unsafe_allow_html=True)
         
-        with st.form("login_form"):
-            kullanici_adi = st.text_input("Kullanıcı Adı")
-            sifre = st.text_input("Şifre", type="password")
-            submitted = st.form_submit_button("🔒 Güvenli Giriş Yap", use_container_width=True)
+        giris_tipi = st.radio("Giriş Türü Seçin", ["👑 Yönetici Girişi", "🏢 Müşteri Cari Girişi"], horizontal=True)
+        
+        if giris_tipi == "👑 Yönetici Girişi":
+            with st.form("admin_login"):
+                kullanici_adi = st.text_input("Yönetici Kullanıcı Adı")
+                sifre = st.text_input("Yönetici Şifre", type="password")
+                submitted = st.form_submit_button("🔒 Yönetici Olarak Giriş Yap", use_container_width=True)
+                
+                if submitted:
+                    if kullanici_adi == "admin" and sifre == "1234":
+                        st.session_state["giris_yapildi"] = True
+                        st.session_state["giris_turu"] = "admin"
+                        st.success("Yönetici girişi başarılı!")
+                        st.rerun()
+                    else:
+                        st.error("Hatalı kullanıcı adı veya şifre!")
+        else:
+            cursor.execute("SELECT id, unvan FROM musteriler")
+            tum_musteriler = cursor.fetchall()
             
-            if submitted:
-                # Varsayılan Bilgiler: Kullanıcı adı: admin, Şifre: 213155
-                if kullanici_adi == "admin" and sifre == "213155":
-                    st.session_state["giris_yapildi"] = True
-                    st.success("Giriş başarılı! Yönlendiriliyorsunuz...")
-                    st.rerun()
-                else:
-                    st.error("Hatalı kullanıcı adı veya şifre!")
+            if tum_musteriler:
+                musteri_secenekleri = {m[1]: m[0] for m in tum_musteriler}
+                with st.form("musteri_login"):
+                    secilen_firma = st.selectbox("Firma Unvanınızı Seçin", list(musteri_secenekleri.keys()))
+                    musteri_sifre = st.text_input("Müşteri Erişim Şifresi (Varsayılan: 1234)", type="password")
+                    m_submitted = st.form_submit_button("🔍 Cari Bilgilerimi Görüntüle", use_container_width=True)
+                    
+                    if m_submitted:
+                        m_id = musteri_secenekleri[secilen_firma]
+                        cursor.execute("SELECT sifre FROM musteriler WHERE id = ?", (m_id,))
+                        db_sifre = cursor.fetchone()[0]
+                        if db_sifre is None:
+                            db_sifre = "1234"
+                            
+                        if musteri_sifre == db_sifre:
+                            st.session_state["giris_yapildi"] = True
+                            st.session_state["giris_turu"] = "musteri"
+                            st.session_state["aktif_musteri_id"] = m_id
+                            st.session_state["aktif_musteri_adi"] = secilen_firma
+                            st.success("Giriş başarılı! Yönlendiriliyorsunuz...")
+                            st.rerun()
+                        else:
+                            st.error("Hatalı şifre!")
+            else:
+                st.info("Sistemde kayıtlı müşteri bulunmuyor. Lütfen yöneticinin sizi kaydetmesini bekleyin.")
     st.stop()
 
-# --- PROFESYONEL ARAYÜZ STİLLERİ ---
+
+# ==========================================
+# MÜŞTERİ PANELİ EKRANI (Eğer müşteri giriş yaptıysa)
+# ==========================================
+if st.session_state["giris_turu"] == "musteri":
+    st.markdown(f"""
+        <div style='background-color: #fff3cd; padding: 20px; border-radius: 10px; border-left: 5px solid #ff9800; margin-bottom: 20px;'>
+            <h2 style='color: #856404; margin: 0;'>Hoş Geldiniz, {st.session_state["aktif_musteri_adi"]}</h2>
+            <p style='color: #666; margin: 5px 0 0 0;'>Buradan şirketinize ait tüm operasyonları, çalışma saatlerini ve güncel borç/bakiye durumunuzu inceleyebilirsiniz.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    m_id = st.session_state["aktif_musteri_id"]
+    
+    # Müşteriye ait işleri çek
+    query = """
+        SELECT id, tarih, santiye, vinc_plaka, operator, aciklama, sure, toplam_tutar, odenen, kalan 
+        FROM isler WHERE musteri_id = ? ORDER BY id DESC
+    """
+    cursor.execute(query, (m_id,))
+    isler = cursor.fetchall()
+    
+    # Toplam bakiye hesapla
+    cursor.execute("SELECT COALESCE(SUM(toplam_tutar), 0), COALESCE(SUM(odenen), 0), COALESCE(SUM(kalan), 0) FROM isler WHERE musteri_id = ?", (m_id,))
+    toplam_borc, toplam_odenen, kalan_bakiye = cursor.fetchone()
+    
+    # Üst Özet Kartları
+    col1, col2, col3 = st.columns(3)
+    col1.metric("📦 Toplam İş Hacmi", f"{toplam_borc:,.2f} TL")
+    col2.metric("💳 Yapılan Toplam Ödeme", f"{toplam_odenen:,.2f} TL")
+    col3.metric("⚠️ Güncel Kalan Borcunuz", f"{kalan_bakiye:,.2f} TL")
+    
+    st.divider()
+    st.subheader("📋 Yapılan İşler, Saatler ve Detaylar")
+    
+    if isler:
+        for is_item in isler:
+            i_id, tarih, santiye, vinc, operator, aciklama, sure, toplam, odenen, kalan = is_item
+            
+            # Süre bilgisini şık biçimlendirme
+            sure_str = f"{sure} Saat" if "Saatlik" in aciklama or sure < 24 else f"{int(sure)} Gün"
+            
+            with st.expander(f"📅 Tarih: {tarih} | Şantiye: {santiye} | Kalan Borç: **{kalan:,.2f} TL**"):
+                st.write(f"**Vinç / Plaka:** {vinc if vinc else 'Belirtilmemiş'} | **Operatör:** {operator if operator else 'Belirtilmemiş'}")
+                st.write(f"**Çalışma Süresi / Miktarı:** {sure_str}")
+                st.write(f"**İş Açıklaması / Detay:** {aciklama}")
+                st.markdown("---")
+                st.write(f"**Toplam Tutar:** {toplam:,.2f} TL | **Ödenen Tutar:** {oden:,.2f} TL | **Kalan:** **{kalan:,.2f} TL**" if 'oden' in locals() else f"**Toplam Tutar:** {toplam:,.2f} TL | **Ödenen:** {odenen:,.2f} TL | **Kalan:** **{kalan:,.2f} TL**")
+    else:
+        st.info("Henüz adınıza kaydedilmiş bir operasyon veya iş bulunmuyor.")
+        
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    if st.button("🚪 Güvenli Çıkış Yap"):
+        st.session_state["giris_yapildi"] = False
+        st.session_state["giris_turu"] = None
+        st.session_state["aktif_musteri_id"] = None
+        st.rerun()
+
+    st.stop()
+
+
+# ==========================================
+# YÖNETİCİ PANELİ EKRANI (Admin giriş yaptıysa)
+# ==========================================
+
+# --- PRO SOL MENÜ STİLLERİ ---
 st.markdown("""
     <style>
     .main-header {
@@ -110,9 +219,13 @@ st.markdown("""
         border-color: #ff9800;
         color: #ff9800;
     }
+    /* SOL MENÜNÜN RENGİNİ AÇIK / FERAH YAPMA */
     [data-testid="stSidebar"] {
-        background-color: #121212;
-        border-right: 1px solid #262626;
+        background-color: #f8f9fa;
+        border-right: 1px solid #e0e0e0;
+    }
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown {
+        color: #212529 !important;
     }
     .pro-badge {
         background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
@@ -133,12 +246,14 @@ st.markdown("""
 with st.sidebar:
     logo_path = "logo.png"
     if os.path.exists(logo_path):
+        st.markdown("<div style='background-color: #fff3cd; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; text-align: center;'>", unsafe_allow_html=True)
         st.image(logo_path, use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center;"><span class="pro-badge">PRO EDITION v3.3</span></div>', unsafe_allow_html=True)
-    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.5</span></div>', unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     
     menu_options = {
         "📊 Cari & Alacak Özeti": "Genel Finans ve Alacak Takibi",
@@ -151,20 +266,20 @@ with st.sidebar:
 
     st.sidebar.divider()
     
-    # Çıkış Yap Butonu
-    if st.sidebar.button("🚪 Oturumu Kapat"):
+    if st.sidebar.button("🚪 Yönetici Oturumunu Kapat"):
         st.session_state["giris_yapildi"] = False
+        st.session_state["giris_turu"] = None
         st.rerun()
         
     st.sidebar.markdown("""
-        <div style='background-color: #1a1a1a; padding: 10px; border-radius: 6px; border-left: 3px solid #ff9800; margin-top: 10px;'>
-            <p style='font-size: 10px; color: #ccc; margin: 0;'>💡 <b>İpucu:</b> Cari özet ekranından tek tıkla WhatsApp borç hatırlatması oluşturabilirsiniz.</p>
+        <div style='background-color: #e9ecef; padding: 10px; border-radius: 6px; border-left: 3px solid #ff9800; margin-top: 10px;'>
+            <p style='font-size: 10px; color: #495057; margin: 0;'>💡 <b>İpucu:</b> Müşteri ekranı üzerinden müşterileriniz şifreleriyle girip saatlerini ve borçlarını görebilir.</p>
         </div>
     """, unsafe_allow_html=True)
 
 # Üst Başlık Alanı
 st.markdown('<p class="main-header">🏗️ DİNAMİK VİNÇ & OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="sub-header">Aktif Modül: <b style="color: #ff9800;">{secim}</b> — Profesyonel Saha ve Finans Paneli</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="sub-header">Aktif Modül (Yönetici): <b style="color: #ff9800;">{secim}</b></p>', unsafe_allow_html=True)
 
 # --- 1. CARİ ÖZET / ALACAK VERECEK ---
 if secim == "📊 Cari & Alacak Özeti":
@@ -319,42 +434,49 @@ elif secim == "📂 İş Geçmişi & Tahsilat":
 
 # --- 4. MÜŞTERİ YÖNETİMİ ---
 elif secim == "👥 Müşteri Yönetimi":
-    st.header("👥 Müşteri / Firma Yönetimi")
+    st.header("👥 Müşteri / Firma Yönetimi ve Şifreler")
     
     with st.form("musteri_form"):
         unvan = st.text_input("Firma / Müşteri Unvanı")
         telefon = st.text_input("Telefon Numarası")
         adres = st.text_area("Adres")
+        m_sifre = st.text_input("Müşteri Portal Giriş Şifresi", value="1234")
         submitted = st.form_submit_button("➕ Yeni Müşteri Kaydet")
         
         if submitted:
             if unvan.strip():
-                cursor.execute("INSERT INTO musteriler (unvan, telefon, adres) VALUES (?, ?, ?)", (unvan, telefon, adres))
+                cursor.execute("INSERT INTO musteriler (unvan, telefon, adres, sifre) VALUES (?, ?, ?, ?)", (unvan, telefon, adres, m_sifre))
                 conn.commit()
-                st.success(f"'{unvan}' başarıyla eklendi!")
+                st.success(f"'{unvan}' başarıyla eklendi! Müşteri şifresi: {m_sifre}")
                 st.rerun()
             else:
                 st.error("Firma unvanı boş olamaz!")
                 
     st.divider()
-    st.subheader("📋 Kayıtlı Müşteriler Listesi")
+    st.subheader("📋 Kayıtlı Müşteriler ve Şifre Düzenleme")
     
-    cursor.execute("SELECT id, unvan, telefon, adres FROM musteriler")
+    cursor.execute("SELECT id, unvan, telefon, adres, COALESCE(sifre, '1234') FROM musteriler")
     m_rows = cursor.fetchall()
     
     if m_rows:
         for m in m_rows:
-            m_id, m_unvan, m_tel, m_adres = m
-            col_info, col_btn = st.columns([3, 1])
-            with col_info:
-                st.markdown(f"**🏢 {m_unvan}** | Tel: {m_tel} \n\n *Adres:* {m_adres}")
-            with col_btn:
-                if st.button("🗑️ Sil", key=f"m_sil_{m_id}"):
-                    cursor.execute("DELETE FROM isler WHERE musteri_id = ?", (m_id,))
-                    cursor.execute("DELETE FROM musteriler WHERE id = ?", (m_id,))
-                    conn.commit()
-                    st.error(f"'{m_unvan}' ve tüm geçmişi silindi!")
-                    st.rerun()
+            m_id, m_unvan, m_tel, m_adres, m_sif = m
+            with st.expander(f"🏢 {m_unvan} (Tel: {m_tel})"):
+                yeni_sifre_input = st.text_input(f"Müşteri Şifresini Güncelle [{m_unvan}]", value=m_sif, key=f"m_sif_{m_id}")
+                col_ g1, col_g2 = st.columns(2)
+                with col_g1:
+                    if st.button("💾 Şifreyi Kaydet", key=f"sif_btn_{m_id}"):
+                        cursor.execute("UPDATE musteriler SET sifre = ? WHERE id = ?", (yeni_sifre_input, m_id))
+                        conn.commit()
+                        st.success("Müşteri şifresi güncellendi!")
+                        st.rerun()
+                with col_g2:
+                    if st.button("🗑️ Müşteriyi Sil", key=f"m_sil_{m_id}"):
+                        cursor.execute("DELETE FROM isler WHERE musteri_id = ?", (m_id,))
+                        cursor.execute("DELETE FROM musteriler WHERE id = ?", (m_id,))
+                        conn.commit()
+                        st.error(f"'{m_unvan}' ve tüm geçmişi silindi!")
+                        st.rerun()
             st.divider()
     else:
         st.info("Henüz müşteri eklenmemiş.")
