@@ -47,12 +47,43 @@ def init_db():
 
 conn, cursor = init_db()
 
-# Sayfa Konfigürasyonu ve Profesyonel Arayüz Stilleri
-st.set_page_config(page_title="Dinamik Vinç | Pro Yönetim Sistemi", page_icon="🏗️", layout="wide")
+# Sayfa Konfigürasyonu
+st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide")
 
+# Oturum Durumu (Login Kontrolü)
+if "giris_yapildi" not in st.session_state:
+    st.session_state["giris_yapildi"] = False
+
+# --- GİRİŞ EKRANI ---
+if not st.session_state["giris_yapildi"]:
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("""
+            <div style='background-color: #161616; padding: 30px; border-radius: 12px; border: 1px solid #333; text-align: center;'>
+                <h1 style='color: #ff9800; font-size: 28px; margin-bottom: 5px;'>🏗️ DİNAMİK VİNÇ</h1>
+                <p style='color: #888; font-size: 13px;'>Yetkili Operasyon ve Finans Paneli</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        with st.form("login_form"):
+            kullanici_adi = st.text_input("Kullanıcı Adı")
+            sifre = st.text_input("Şifre", type="password")
+            submitted = st.form_submit_button("🔒 Güvenli Giriş Yap", use_container_width=True)
+            
+            if submitted:
+                # Varsayılan Bilgiler: Kullanıcı adı: admin, Şifre: 1234
+                if kullanici_adi == "admin" and sifre == "1234":
+                    st.session_state["giris_yapildi"] = True
+                    st.success("Giriş başarılı! Yönlendiriliyorsunuz...")
+                    st.rerun()
+                else:
+                    st.error("Hatalı kullanıcı adı veya şifre!")
+    st.stop()
+
+# --- PROFESYONEL ARAYÜZ STİLLERİ ---
 st.markdown("""
     <style>
-    /* Genel Arka Plan ve Tipografi */
     .main-header {
         font-size: 26px;
         font-weight: 800;
@@ -67,7 +98,6 @@ st.markdown("""
         margin-bottom: 25px;
         letter-spacing: 0.3px;
     }
-    /* Buton ve Kart Tasarımları */
     .stButton>button {
         width: 100%;
         border-radius: 8px;
@@ -80,7 +110,6 @@ st.markdown("""
         border-color: #ff9800;
         color: #ff9800;
     }
-    /* Sidebar Güzelleştirmeleri */
     [data-testid="stSidebar"] {
         background-color: #121212;
         border-right: 1px solid #262626;
@@ -100,7 +129,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- PRO SOL MENÜ (LOGO VE ÖZEL SEKME YAPISI) ---
+# --- PRO SOL MENÜ ---
 with st.sidebar:
     logo_path = "logo.png"
     if os.path.exists(logo_path):
@@ -108,10 +137,9 @@ with st.sidebar:
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center;"><span class="pro-badge">PRO EDITION v3.2</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center;"><span class="pro-badge">PRO EDITION v3.3</span></div>', unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
     
-    # Modern ve Şık Menü Seçenekleri
     menu_options = {
         "📊 Cari & Alacak Özeti": "Genel Finans ve Alacak Takibi",
         "📝 Yeni İş / Operasyon": "Saha ve Kiralama Girişi",
@@ -119,12 +147,18 @@ with st.sidebar:
         "👥 Müşteri Yönetimi": "Firma ve İletişim Rehberi"
     }
     
-    secim = st.radio("📋 OPERASYONEL MENÜ", list(menu_options.keys()), format_func=lambda x: f"{x}")
+    secim = st.radio("📋 OPERASYONEL MENÜ", list(menu_options.keys()))
 
     st.sidebar.divider()
+    
+    # Çıkış Yap Butonu
+    if st.sidebar.button("🚪 Oturumu Kapat"):
+        st.session_state["giris_yapildi"] = False
+        st.rerun()
+        
     st.sidebar.markdown("""
-        <div style='background-color: #1a1a1a; padding: 12px; border-radius: 6px; border-left: 3px solid #ff9800;'>
-            <p style='font-size: 11px; color: #ccc; margin: 0;'>💡 <b>Hızlı İpucu:</b> Cari özet ekranından tek tıkla WhatsApp borç hatırlatması oluşturabilirsiniz.</p>
+        <div style='background-color: #1a1a1a; padding: 10px; border-radius: 6px; border-left: 3px solid #ff9800; margin-top: 10px;'>
+            <p style='font-size: 10px; color: #ccc; margin: 0;'>💡 <b>İpucu:</b> Cari özet ekranından tek tıkla WhatsApp borç hatırlatması oluşturabilirsiniz.</p>
         </div>
     """, unsafe_allow_html=True)
 
