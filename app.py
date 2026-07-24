@@ -72,7 +72,7 @@ if not st.session_state["giris_yapildi"]:
             submitted = st.form_submit_button("🔒 Güvenli Giriş Yap", use_container_width=True)
             
             if submitted:
-                # Varsayılan Bilgiler: Kullanıcı adı: admin, Şifre: 1234
+                # Varsayılan Bilgiler: Kullanıcı adı: admin, Şifre: 213155
                 if kullanici_adi == "admin" and sifre == "1234":
                     st.session_state["giris_yapildi"] = True
                     st.success("Giriş başarılı! Yönlendiriliyorsunuz...")
