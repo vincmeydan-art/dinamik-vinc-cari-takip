@@ -60,7 +60,7 @@ st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_
 if "giris_yapildi" not in st.session_state:
     st.session_state["giris_yapildi"] = False
 if "giris_turu" not in st.session_state:
-    st.session_state["giris_turu"] = None # "admin" veya "musteri"
+    st.session_state["giris_turu"] = None 
 if "aktif_musteri_id" not in st.session_state:
     st.session_state["aktif_musteri_id"] = None
 if "aktif_musteri_adi" not in st.session_state:
@@ -108,9 +108,8 @@ if not st.session_state["giris_yapildi"]:
                     if m_submitted:
                         m_id = musteri_secenekleri[secilen_firma]
                         cursor.execute("SELECT sifre FROM musteriler WHERE id = ?", (m_id,))
-                        db_sifre = cursor.fetchone()[0]
-                        if db_sifre is None:
-                            db_sifre = "1234"
+                        db_res = cursor.fetchone()
+                        db_sifre = db_res[0] if db_res and db_res[0] else "1234"
                             
                         if musteri_sifre == db_sifre:
                             st.session_state["giris_yapildi"] = True
@@ -127,7 +126,7 @@ if not st.session_state["giris_yapildi"]:
 
 
 # ==========================================
-# MÜŞTERİ PANELİ EKRANI (Eğer müşteri giriş yaptıysa)
+# MÜŞTERİ PANELİ EKRANI
 # ==========================================
 if st.session_state["giris_turu"] == "musteri":
     st.markdown(f"""
@@ -139,7 +138,6 @@ if st.session_state["giris_turu"] == "musteri":
     
     m_id = st.session_state["aktif_musteri_id"]
     
-    # Müşteriye ait işleri çek
     query = """
         SELECT id, tarih, santiye, vinc_plaka, operator, aciklama, sure, toplam_tutar, odenen, kalan 
         FROM isler WHERE musteri_id = ? ORDER BY id DESC
@@ -147,11 +145,9 @@ if st.session_state["giris_turu"] == "musteri":
     cursor.execute(query, (m_id,))
     isler = cursor.fetchall()
     
-    # Toplam bakiye hesapla
     cursor.execute("SELECT COALESCE(SUM(toplam_tutar), 0), COALESCE(SUM(odenen), 0), COALESCE(SUM(kalan), 0) FROM isler WHERE musteri_id = ?", (m_id,))
     toplam_borc, toplam_odenen, kalan_bakiye = cursor.fetchone()
     
-    # Üst Özet Kartları
     col1, col2, col3 = st.columns(3)
     col1.metric("📦 Toplam İş Hacmi", f"{toplam_borc:,.2f} TL")
     col2.metric("💳 Yapılan Toplam Ödeme", f"{toplam_odenen:,.2f} TL")
@@ -163,8 +159,6 @@ if st.session_state["giris_turu"] == "musteri":
     if isler:
         for is_item in isler:
             i_id, tarih, santiye, vinc, operator, aciklama, sure, toplam, odenen, kalan = is_item
-            
-            # Süre bilgisini şık biçimlendirme
             sure_str = f"{sure} Saat" if "Saatlik" in aciklama or sure < 24 else f"{int(sure)} Gün"
             
             with st.expander(f"📅 Tarih: {tarih} | Şantiye: {santiye} | Kalan Borç: **{kalan:,.2f} TL**"):
@@ -172,7 +166,7 @@ if st.session_state["giris_turu"] == "musteri":
                 st.write(f"**Çalışma Süresi / Miktarı:** {sure_str}")
                 st.write(f"**İş Açıklaması / Detay:** {aciklama}")
                 st.markdown("---")
-                st.write(f"**Toplam Tutar:** {toplam:,.2f} TL | **Ödenen Tutar:** {oden:,.2f} TL | **Kalan:** **{kalan:,.2f} TL**" if 'oden' in locals() else f"**Toplam Tutar:** {toplam:,.2f} TL | **Ödenen:** {odenen:,.2f} TL | **Kalan:** **{kalan:,.2f} TL**")
+                st.write(f"**Toplam Tutar:** {toplam:,.2f} TL | **Ödenen:** {odenen:,.2f} TL | **Kalan:** **{kalan:,.2f} TL**")
     else:
         st.info("Henüz adınıza kaydedilmiş bir operasyon veya iş bulunmuyor.")
         
@@ -187,10 +181,8 @@ if st.session_state["giris_turu"] == "musteri":
 
 
 # ==========================================
-# YÖNETİCİ PANELİ EKRANI (Admin giriş yaptıysa)
+# YÖNETİCİ PANELİ EKRANI
 # ==========================================
-
-# --- PRO SOL MENÜ STİLLERİ ---
 st.markdown("""
     <style>
     .main-header {
@@ -219,7 +211,6 @@ st.markdown("""
         border-color: #ff9800;
         color: #ff9800;
     }
-    /* SOL MENÜNÜN RENGİNİ AÇIK / FERAH YAPMA */
     [data-testid="stSidebar"] {
         background-color: #f8f9fa;
         border-right: 1px solid #e0e0e0;
@@ -242,7 +233,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- PRO SOL MENÜ ---
 with st.sidebar:
     logo_path = "logo.png"
     if os.path.exists(logo_path):
@@ -270,14 +260,7 @@ with st.sidebar:
         st.session_state["giris_yapildi"] = False
         st.session_state["giris_turu"] = None
         st.rerun()
-        
-    st.sidebar.markdown("""
-        <div style='background-color: #e9ecef; padding: 10px; border-radius: 6px; border-left: 3px solid #ff9800; margin-top: 10px;'>
-            <p style='font-size: 10px; color: #495057; margin: 0;'>💡 <b>İpucu:</b> Müşteri ekranı üzerinden müşterileriniz şifreleriyle girip saatlerini ve borçlarını görebilir.</p>
-        </div>
-    """, unsafe_allow_html=True)
 
-# Üst Başlık Alanı
 st.markdown('<p class="main-header">🏗️ DİNAMİK VİNÇ & OPERASYON YÖNETİMİ</p>', unsafe_allow_html=True)
 st.markdown(f'<p class="sub-header">Aktif Modül (Yönetici): <b style="color: #ff9800;">{secim}</b></p>', unsafe_allow_html=True)
 
@@ -310,7 +293,6 @@ if secim == "📊 Cari & Alacak Özeti":
                 
                 whatsapp_text = f"Sayın {unvan}, {datetime.now().strftime('%d.%m.%Y')} tarihi itibarıyla güncel kalan borç/bakiye tutarınız: {kalan:,.2f} TL'dir. Dinamik Vinç - İyi çalışmalar dileriz."
                 st.code(whatsapp_text, language="text")
-                st.caption("📲 Yukarıdaki metni kopyalayarak müşteriye WhatsApp üzerinden borç hatırlatması gönderebilirsiniz.")
     else:
         st.info("Henüz kayıtlı müşteri veya iş bulunmuyor.")
 
@@ -348,7 +330,7 @@ elif secim == "📝 Yeni İş / Operasyon":
             kdv_tipi = st.selectbox("Vergi / KDV Hesaplama", ["KDV Hariç (Düz Tutar)", "KDV Dahil (%20)", "İnşaat Tevkifatlı (5/10)"])
             odenen = st.number_input("Peşin Alınan Ödeme (TL)", min_value=0.0, value=0.0, step=100.0)
             
-        aciklama = st.text_area("İşin Detay Açıklaması (Yapılan işin türü, detaylar vb.)")
+        aciklama = st.text_area("İşin Detay Açıklaması")
         
         uploaded_file = st.file_uploader("📸 Saha Tutanağı / Kantar / Çalışma Fişi Fotoğrafı", type=["png", "jpg", "jpeg"])
         foto_yolu = ""
@@ -359,7 +341,6 @@ elif secim == "📝 Yeni İş / Operasyon":
                 f.write(uploaded_file.getbuffer())
             st.success("Saha belgesi başarıyla yüklendi!")
 
-        st.markdown("")
         if st.button("🚀 İşi ve Operasyonu Kaydet", type="primary"):
             temel_tutar = sure * birim_fiyat
             tam_aciklama = f"[{ucret_tipi} - {sure} { 'Saat' if 'Saatlik' in ucret_tipi else 'Gün' }] {aciklama}"
@@ -409,7 +390,6 @@ elif secim == "📂 İş Geçmişi & Tahsilat":
                     st.image(foto, caption="Saha Belgesi", width=250)
                 
                 col_tahsilat, col_sil = st.columns(2)
-                
                 with col_tahsilat:
                     tahsilat_miktari = st.number_input(f"Tahsilat Ekle (TL) [ID: {is_id}]", min_value=0.0, value=0.0, step=500.0, key=f"t_miktar_{is_id}")
                     if st.button(f"💵 Ödeme Al / Düş", key=f"t_btn_{is_id}"):
@@ -418,7 +398,7 @@ elif secim == "📂 İş Geçmişi & Tahsilat":
                             yeni_kalan = toplam - yeni_odenen
                             cursor.execute("UPDATE isler SET odenen = ?, kalan = ? WHERE id = ?", (yeni_odenen, yeni_kalan, is_id))
                             conn.commit()
-                            st.success(f"{tahsilat_miktari:,.2f} TL tahsilat işlendi! Güncel Kalan: {yeni_kalan:,.2f} TL")
+                            st.success(f"{tahsilat_miktari:,.2f} TL tahsilat işlendi!")
                             st.rerun()
                 
                 with col_sil:
@@ -447,7 +427,7 @@ elif secim == "👥 Müşteri Yönetimi":
             if unvan.strip():
                 cursor.execute("INSERT INTO musteriler (unvan, telefon, adres, sifre) VALUES (?, ?, ?, ?)", (unvan, telefon, adres, m_sifre))
                 conn.commit()
-                st.success(f"'{unvan}' başarıyla eklendi! Müşteri şifresi: {m_sifre}")
+                st.success(f"'{unvan}' başarıyla eklendi!")
                 st.rerun()
             else:
                 st.error("Firma unvanı boş olamaz!")
@@ -463,7 +443,7 @@ elif secim == "👥 Müşteri Yönetimi":
             m_id, m_unvan, m_tel, m_adres, m_sif = m
             with st.expander(f"🏢 {m_unvan} (Tel: {m_tel})"):
                 yeni_sifre_input = st.text_input(f"Müşteri Şifresini Güncelle [{m_unvan}]", value=m_sif, key=f"m_sif_{m_id}")
-                col_ g1, col_g2 = st.columns(2)
+                col_g1, col_g2 = st.columns(2)
                 with col_g1:
                     if st.button("💾 Şifreyi Kaydet", key=f"sif_btn_{m_id}"):
                         cursor.execute("UPDATE musteriler SET sifre = ? WHERE id = ?", (yeni_sifre_input, m_id))
