@@ -38,14 +38,12 @@ def init_db():
         )
     """)
 
-    # Admin şifresini tutmak için tablo veya oturum tablosu kontrolü
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ayarlar (
             anahtar TEXT PRIMARY KEY,
             deger TEXT
         )
     """)
-    # Varsayılan admin şifresi yoksa ekle
     cursor.execute("INSERT OR IGNORE INTO ayarlar (anahtar, deger) VALUES ('admin_sifre', '1234')")
     
     try:
@@ -172,7 +170,7 @@ if st.session_state["giris_turu"] == "musteri":
     if isler:
         for is_item in isler:
             i_id, tarih, santiye, vinc, operator, aciklama, sure, toplam, odenen, kalan = is_item
-            sure_str = f"{sure} Saat" if "Saatlik" in aciklama or sure < 24 else f"{int(sure)} Gün"
+            sure_str = f"{sure} Saat" if "Saat" in aciklama or sure < 24 else f"{int(sure)} Gün"
             
             with st.expander(f"📅 Tarih: {tarih} | Şantiye: {santiye} | Kalan Borç: **{kalan:,.2f} TL**"):
                 st.write(f"**Vinç / Plaka:** {vinc if vinc else 'Belirtilmemiş'} | **Operatör:** {operator if operator else 'Belirtilmemiş'}")
@@ -255,7 +253,7 @@ with st.sidebar:
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.6</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.7</span></div>', unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     
     menu_options = {
@@ -332,14 +330,43 @@ elif secim == "📝 Yeni İş / Operasyon":
             operator = st.text_input("Operatör Adı")
             
         with col2:
-            ucret_tipi = st.selectbox("Çalışma / Ücret Tipi", ["Saatlik Çalışma", "Günlük Çalışma (Yevmiye)"])
+            ucret_tipi = st.selectbox(
+                "Çalışma / Ücret Tipi", 
+                [
+                    "Kademeli Saatlik (İlk X Saat + Sonraki Saat Başı Artış)", 
+                    "Düz Saatlik Çalışma", 
+                    "Günlük Çalışma (Yevmiye)"
+                ]
+            )
             
-            if ucret_tipi == "Saatlik Çalışma":
+            # Dinamik Ücret Hesaplama Parametreleri
+            temel_tutar = 0.0
+            sure = 1.0
+            
+            if ucret_tipi == "Kademeli Saatlik (İlk X Saat + Sonraki Saat Başı Artış)":
+                st.info("💡 Örn: İlk 1 saat 5000 TL, sonraki her saat 2000 TL artıyorsa; İlk Saat Fiyatına 5000, Saat Başı Artışa 2000 yazın.")
+                c_col1, c_col2 = st.columns(2)
+                with c_col1:
+                    sure = st.number_input("Toplam Çalışma Süresi (Saat)", min_value=1.0, value=2.0, step=0.5)
+                    ilk_saat_ucreti = st.number_input("İlk X Saat Fiyatı (TL)", min_value=0.0, value=5000.0, step=500.0)
+                with c_col2:
+                    sonraki_saat_basi_artis = st.number_input("Sonraki Her Saat Başı Artış (TL)", min_value=0.0, value=2000.0, step=100.0)
+                
+                # Kademeli Tutar Hesaplama Mantığı
+                if sure <= 1.0:
+                    temel_tutar = ilk_saat_ucreti * sure
+                else:
+                    temel_tutar = ilk_saat_ucreti + ((sure - 1.0) * sonraki_saat_basi_artis)
+                birim_fiyat = ilk_saat_ucreti # Arşiv için referans
+                
+            elif ucret_tipi == "Düz Saatlik Çalışma":
                 sure = st.number_input("Çalışma Süresi (Saat)", min_value=0.5, value=1.0, step=0.5)
-                birim_fiyat = st.number_input("Saatlik Birim Fiyat (TL)", min_value=0.0, value=0.0, step=100.0)
+                birim_fiyat = st.number_input("Saatlik Birim Fiyat (TL)", min_value=0.0, value=2000.0, step=100.0)
+                temel_tutar = sure * birim_fiyat
             else:
                 sure = st.number_input("Çalışma Süresi (Gün)", min_value=1.0, value=1.0, step=1.0)
-                birim_fiyat = st.number_input("Günlük Yevmiye Fiyatı (TL)", min_value=0.0, value=0.0, step=500.0)
+                birim_fiyat = st.number_input("Günlük Yevmiye Fiyatı (TL)", min_value=0.0, value=5000.0, step=500.0)
+                temel_tutar = sure * birim_fiyat
                 
             kdv_tipi = st.selectbox("Vergi / KDV Hesaplama", ["KDV Hariç (Düz Tutar)", "KDV Dahil (%20)", "İnşaat Tevkifatlı (5/10)"])
             odenen = st.number_input("Peşin Alınan Ödeme (TL)", min_value=0.0, value=0.0, step=100.0)
@@ -356,8 +383,10 @@ elif secim == "📝 Yeni İş / Operasyon":
             st.success("Saha belgesi başarıyla yüklendi!")
 
         if st.button("🚀 İşi ve Operasyonu Kaydet", type="primary"):
-            temel_tutar = sure * birim_fiyat
-            tam_aciklama = f"[{ucret_tipi} - {sure} { 'Saat' if 'Saatlik' in ucret_tipi else 'Gün' }] {aciklama}"
+            if "Kademeli" in ucret_tipi:
+                tam_aciklama = f"[Kademeli: {sure} Saat | İlk Saat: {ilk_saat_ucreti} TL, Artış: {sonraki_saat_basi_artis} TL] {aciklama}"
+            else:
+                tam_aciklama = f"[{ucret_tipi} - {sure} { 'Saat' if 'Saatlik' in ucret_tipi else 'Gün' }] {aciklama}"
             
             if kdv_tipi == "KDV Dahil (%20)":
                 toplam_tutar = temel_tutar * 1.20
@@ -375,7 +404,7 @@ elif secim == "📝 Yeni İş / Operasyon":
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (musteri_id, tarih, santiye, vinc, operator, tam_aciklama, sure, birim_fiyat, kdv_tipi, toplam_tutar, odenen, kalan, foto_yolu))
             conn.commit()
-            st.success(f"İş başarıyla kaydedildi! Toplam Tutar: {toplam_tutar:,.2f} TL | Kalan Bakiye: {kalan:,.2f} TL")
+            st.success(f"İş başarıyla kaydedildi! Hesaplanan Toplam Tutar: {toplam_tutar:,.2f} TL | Kalan Bakiye: {kalan:,.2f} TL")
 
 # --- 3. İŞ GEÇMİŞİ & TAHSİLAT ---
 elif secim == "📂 İş Geçmişi & Tahsilat":
