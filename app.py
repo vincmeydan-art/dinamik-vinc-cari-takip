@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as sT
 import os
 from datetime import datetime
 import psycopg2
@@ -343,7 +343,29 @@ elif secim == "📝 Yeni İş / Operasyon":
         
         col1, col2 = st.columns(2)
         with col1:
-            tarih = st.date_input("İş Tarihi", datetime.now()).strftime("%d.%m.%Y")
+            # Türkçe ay ve gün isimleriyle tarih gösterimi için HTML/JS takviyeli özel format alanı
+            st.markdown("""
+                <style>
+                /* Takvim arayüzünü Türkçe etiketlerle uyumlu hale getiren düzenleme */
+                input[type="date"]::-webkit-calendar-picker-indicator {
+                    cursor: pointer;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+            
+            # Türkçe ay/gün gösterimi için format fonksiyonu
+            tr_aylar = {1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran", 7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık"}
+            tr_gunler = {"Monday": "Pazartesi", "Tuesday": "Salı", "Wednesday": "Çarşamba", "Thursday": "Perşembe", "Friday": "Cuma", "Saturday": "Cumartesi", "Sunday": "Pazar"}
+            
+            secilen_tarih = st.date_input("İş Tarihi", datetime.now())
+            tarih = secilen_tarih.strftime("%d.%m.%Y")
+            
+            # Seçilen tarihin Türkçe okunuşunu gösteren şık bilgi kutusu
+            gun_en = secilen_tarih.strftime("%A")
+            gun_tr = tr_gunler.get(gun_en, gun_en)
+            ay_tr = tr_aylar.get(secilen_tarih.month, "")
+            st.caption(f"📅 Seçilen Tarih: **{secilen_tarih.day} {ay_tr} {secilen_tarih.year} ({gun_tr})**")
+
             santiye = st.text_input("Şantiye Adı / Konum")
             vinc = st.text_input("Vinç / Plaka (Örn: 34 VNC 01)")
             operator = st.text_input("Operatör Adı")
