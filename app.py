@@ -117,15 +117,6 @@ st.markdown(
         color: #ffffff !important;
     }
 
-    div[data-testid="stNumberInput"] button:hover {
-        background-color: #ff9800 !important;
-    }
-
-    div[data-testid="stNumberInput"] button:hover svg {
-        fill: #000000 !important;
-        color: #000000 !important;
-    }
-
     /* CODE BLOKLARI */
     pre, code, div[data-testid="stCodeBlock"], .stCode {
         background-color: #1a1a1a !important;
@@ -183,19 +174,26 @@ st.markdown(
         -webkit-text-fill-color: #ffffff !important;
     }
     
+    /* DROPDOWN AÇILAN PENCERE VE LİSTE ARKAPLANLARI (FOTOĞRAFKİ BEYAZLIĞI YOK EDEN KISIM) */
     div[data-baseweb="popover"], 
     div[data-baseweb="menu"], 
     ul[role="listbox"],
-    div[data-baseweb="popover"] > div {
+    div[data-baseweb="popover"] > div,
+    div[data-baseweb="menu"] > div,
+    ul[role="listbox"] > li {
         background-color: #1a1a1a !important;
+        background: #1a1a1a !important;
         border: 1px solid #444444 !important;
         color: #ffffff !important;
     }
     
     li[role="option"], 
     li[role="option"] div, 
-    li[role="option"] span {
+    li[role="option"] span,
+    div[role="option"],
+    div[role="option"] span {
         background-color: #1a1a1a !important;
+        background: #1a1a1a !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
@@ -203,8 +201,10 @@ st.markdown(
     li[role="option"]:hover, 
     li[role="option"]:hover div,
     li[role="option"]:hover span, 
-    li[role="option"][aria-selected="true"] {
+    li[role="option"][aria-selected="true"],
+    div[role="option"]:hover {
         background-color: #ff9800 !important;
+        background: #ff9800 !important;
         color: #000000 !important;
         -webkit-text-fill-color: #000000 !important;
     }
