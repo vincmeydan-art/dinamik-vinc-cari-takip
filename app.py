@@ -6,7 +6,7 @@ import psycopg2
 # Sayfa Konfigürasyonu
 st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide", initial_sidebar_state="expanded")
 
-# --- GENEL ARKA PLAN VE EXPANDER BAŞLIKLARI KESİN KOYU TEMA DÜZELTMELERİ ---
+# --- GENEL ARKA PLAN VE TÜM BİLEŞENLER İÇİN KESİN KOYU TEMA DÜZELTMELERİ ---
 st.markdown("""
     <style>
     .stApp {
@@ -34,7 +34,7 @@ st.markdown("""
         letter-spacing: 0.3px;
     }
 
-    /* --- EXPANDER (GENİŞLETİLEBİLİR KUTU) ÜST BAŞLIK KESİN ÇÖZÜM --- */
+    /* --- EXPANDER (GENİŞLETİLEBİLİR KUTU) VE ÖZET BAŞLIKLARI KESİN ÇÖZÜM --- */
     div[data-testid="stExpander"] {
         background-color: #1e1e1e !important;
         border: 1px solid #444444 !important;
@@ -51,10 +51,24 @@ st.markdown("""
     details[data-testid="stExpander"] summary p,
     details[data-testid="stExpander"] summary div {
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     details[data-testid="stExpander"] summary:hover {
         background-color: #2a2a2a !important;
+    }
+
+    /* --- CODE BLOKLARI VE METİN KUTULARI (st.code) KESİN ÇÖZÜM --- */
+    pre, code, div[data-testid="stCodeBlock"], .stCode {
+        background-color: #1a1a1a !important;
+        color: #4CAF50 !important;
+        border: 1px solid #444444 !important;
+        border-radius: 8px !important;
+    }
+
+    pre code span {
+        color: #e0e0e0 !important;
+        -webkit-text-fill-color: #e0e0e0 !important;
     }
 
     /* --- TÜM BUTONLAR VE FORM GİRİŞ BUTONLARI İÇİN NET KOYU/SİYAH METİN --- */
