@@ -36,6 +36,7 @@ st.markdown("""
         margin-bottom: 25px;
         letter-spacing: 0.3px;
     }
+    /* Butonların yazı rengini siyah ve net yap */
     .stButton>button {
         width: 100%;
         border-radius: 8px;
@@ -43,13 +44,13 @@ st.markdown("""
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
         border: 1px solid #444444;
-        background-color: #1e1e1e;
-        color: #ffffff;
+        background-color: #ff9800;
+        color: #000000 !important;
     }
     .stButton>button:hover {
-        border-color: #ff9800;
-        color: #ff9800;
-        background-color: #2b2b2b;
+        border-color: #ffb703;
+        background-color: #ffb703;
+        color: #000000 !important;
     }
     /* Kenar çubuğu (Sidebar) tasarımı */
     [data-testid="stSidebar"] {
