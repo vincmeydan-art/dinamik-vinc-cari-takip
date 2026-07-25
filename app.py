@@ -1,16 +1,22 @@
 import streamlit as st
-import sqlite3
 import os
 from datetime import datetime
+import psycopg2
 
-# Veritabanı Bağlantısı ve Akıllı Tablo Güncelleme
+# --- BULUT VERİTABANI BAĞLANTISI (PostgreSQL / Supabase) ---
 def init_db():
-    conn = sqlite3.connect("vinc_takip.db", check_same_thread=False)
+    database_url = st.secrets.get("DATABASE_URL")
+    
+    if not database_url:
+        st.error("⚠️ Streamlit secrets içinde DATABASE_URL bulunamadı! Lütfen Adım 3'ü uygulayın.")
+        st.stop()
+        
+    conn = psycopg2.connect(database_url, sslmode='require')
     cursor = conn.cursor()
     
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS musteriler (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             unvan TEXT NOT NULL,
             telefon TEXT,
             adres TEXT,
@@ -20,8 +26,8 @@ def init_db():
     
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS isler (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            musteri_id INTEGER,
+            id SERIAL PRIMARY KEY,
+            musteri_id INTEGER REFERENCES musteriler(id) ON DELETE CASCADE,
             tarih TEXT,
             santiye TEXT,
             vinc_plaka TEXT,
@@ -33,8 +39,7 @@ def init_db():
             toplam_tutar REAL,
             odenen REAL,
             kalan REAL,
-            foto_yolu TEXT,
-            FOREIGN KEY(musteri_id) REFERENCES musteriler(id) ON DELETE CASCADE
+            foto_yolu TEXT
         )
     """)
 
@@ -44,18 +49,8 @@ def init_db():
             deger TEXT
         )
     """)
-    cursor.execute("INSERT OR IGNORE INTO ayarlar (anahtar, deger) VALUES ('admin_sifre', '1234')")
+    cursor.execute("INSERT INTO ayarlar (anahtar, deger) VALUES ('admin_sifre', '1234') ON CONFLICT (anahtar) DO NOTHING")
     
-    try:
-        cursor.execute("ALTER TABLE isler ADD COLUMN kdv_durumu TEXT")
-    except sqlite3.OperationalError:
-        pass 
-
-    try:
-        cursor.execute("ALTER TABLE musteriler ADD COLUMN sifre TEXT DEFAULT '1234'")
-    except sqlite3.OperationalError:
-        pass
-        
     conn.commit()
     return conn, cursor
 
@@ -151,12 +146,12 @@ if st.session_state["giris_turu"] == "musteri":
     
     query = """
         SELECT id, tarih, santiye, vinc_plaka, operator, aciklama, sure, toplam_tutar, odenen, kalan 
-        FROM isler WHERE musteri_id = ? ORDER BY id DESC
+        FROM isler WHERE musteri_id = %s ORDER BY id DESC
     """
     cursor.execute(query, (m_id,))
     isler = cursor.fetchall()
     
-    cursor.execute("SELECT COALESCE(SUM(toplam_tutar), 0), COALESCE(SUM(odenen), 0), COALESCE(SUM(kalan), 0) FROM isler WHERE musteri_id = ?", (m_id,))
+    cursor.execute("SELECT COALESCE(SUM(toplam_tutar), 0), COALESCE(SUM(odenen), 0), COALESCE(SUM(kalan), 0) FROM isler WHERE musteri_id = %s", (m_id,))
     toplam_borc, toplam_odenen, kalan_bakiye = cursor.fetchone()
     
     col1, col2, col3 = st.columns(3)
@@ -253,7 +248,7 @@ with st.sidebar:
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.7</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.8 (Cloud)</span></div>', unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     
     menu_options = {
@@ -287,7 +282,7 @@ if secim == "📊 Cari & Alacak Özeti":
                COALESCE(SUM(isler.kalan), 0)
         FROM musteriler
         LEFT JOIN isler ON musteriler.id = isler.musteri_id
-        GROUP BY musteriler.id
+        GROUP BY musteriler.id, musteriler.unvan, musteriler.telefon
     """
     cursor.execute(query)
     rows = cursor.fetchall()
@@ -339,7 +334,6 @@ elif secim == "📝 Yeni İş / Operasyon":
                 ]
             )
             
-            # Dinamik Ücret Hesaplama Parametreleri
             temel_tutar = 0.0
             sure = 1.0
             
@@ -352,12 +346,11 @@ elif secim == "📝 Yeni İş / Operasyon":
                 with c_col2:
                     sonraki_saat_basi_artis = st.number_input("Sonraki Her Saat Başı Artış (TL)", min_value=0.0, value=2000.0, step=100.0)
                 
-                # Kademeli Tutar Hesaplama Mantığı
                 if sure <= 1.0:
                     temel_tutar = ilk_saat_ucreti * sure
                 else:
                     temel_tutar = ilk_saat_ucreti + ((sure - 1.0) * sonraki_saat_basi_artis)
-                birim_fiyat = ilk_saat_ucreti # Arşiv için referans
+                birim_fiyat = ilk_saat_ucreti 
                 
             elif ucret_tipi == "Düz Saatlik Çalışma":
                 sure = st.number_input("Çalışma Süresi (Saat)", min_value=0.5, value=1.0, step=0.5)
@@ -401,7 +394,7 @@ elif secim == "📝 Yeni İş / Operasyon":
             
             cursor.execute("""
                 INSERT INTO isler (musteri_id, tarih, santiye, vinc_plaka, operator, aciklama, sure, birim_fiyat, kdv_durumu, toplam_tutar, odenen, kalan, foto_yolu)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (musteri_id, tarih, santiye, vinc, operator, tam_aciklama, sure, birim_fiyat, kdv_tipi, toplam_tutar, odenen, kalan, foto_yolu))
             conn.commit()
             st.success(f"İş başarıyla kaydedildi! Hesaplanan Toplam Tutar: {toplam_tutar:,.2f} TL | Kalan Bakiye: {kalan:,.2f} TL")
@@ -439,7 +432,7 @@ elif secim == "📂 İş Geçmişi & Tahsilat":
                         if tahsilat_miktari > 0:
                             yeni_odenen = odenen + tahsilat_miktari
                             yeni_kalan = toplam - yeni_odenen
-                            cursor.execute("UPDATE isler SET odenen = ?, kalan = ? WHERE id = ?", (yeni_odenen, yeni_kalan, is_id))
+                            cursor.execute("UPDATE isler SET odenen = %s, kalan = %s WHERE id = %s", (yeni_odenen, yeni_kalan, is_id))
                             conn.commit()
                             st.success(f"{tahsilat_miktari:,.2f} TL tahsilat işlendi!")
                             st.rerun()
@@ -448,7 +441,7 @@ elif secim == "📂 İş Geçmişi & Tahsilat":
                     st.write("") 
                     st.write("")
                     if st.button(f"🗑️ İşi Komple Sil", key=f"is_sil_{is_id}"):
-                        cursor.execute("DELETE FROM isler WHERE id = ?", (is_id,))
+                        cursor.execute("DELETE FROM isler WHERE id = %s", (is_id,))
                         conn.commit()
                         st.warning("İş silindi!")
                         st.rerun()
@@ -468,7 +461,7 @@ elif secim == "👥 Müşteri Yönetimi":
         
         if submitted:
             if unvan.strip():
-                cursor.execute("INSERT INTO musteriler (unvan, telefon, adres, sifre) VALUES (?, ?, ?, ?)", (unvan, telefon, adres, m_sifre))
+                cursor.execute("INSERT INTO musteriler (unvan, telefon, adres, sifre) VALUES (%s, %s, %s, %s)", (unvan, telefon, adres, m_sifre))
                 conn.commit()
                 st.success(f"'{unvan}' başarıyla eklendi!")
                 st.rerun()
@@ -489,14 +482,14 @@ elif secim == "👥 Müşteri Yönetimi":
                 col_g1, col_g2 = st.columns(2)
                 with col_g1:
                     if st.button("💾 Şifreyi Kaydet", key=f"sif_btn_{m_id}"):
-                        cursor.execute("UPDATE musteriler SET sifre = ? WHERE id = ?", (yeni_sifre_input, m_id))
+                        cursor.execute("UPDATE musteriler SET sifre = %s WHERE id = %s", (yeni_sifre_input, m_id))
                         conn.commit()
                         st.success("Müşteri şifresi güncellendi!")
                         st.rerun()
                 with col_g2:
                     if st.button("🗑️ Müşteriyi Sil", key=f"m_sil_{m_id}"):
-                        cursor.execute("DELETE FROM isler WHERE musteri_id = ?", (m_id,))
-                        cursor.execute("DELETE FROM musteriler WHERE id = ?", (m_id,))
+                        cursor.execute("DELETE FROM isler WHERE musteri_id = %s", (m_id,))
+                        cursor.execute("DELETE FROM musteriler WHERE id = %s", (m_id,))
                         conn.commit()
                         st.error(f"'{m_unvan}' ve tüm geçmişi silindi!")
                         st.rerun()
@@ -527,6 +520,6 @@ elif secim == "⚙️ Admin Şifre Değiştir":
             elif yeni_sifre1 != yeni_sifre2:
                 st.error("Yeni girdiğiniz şifreler birbiriyle eşleşmiyor!")
             else:
-                cursor.execute("UPDATE ayarlar SET deger = ? WHERE anahtar = 'admin_sifre'", (yeni_sifre1,))
+                cursor.execute("UPDATE ayarlar SET deger = %s WHERE anahtar = 'admin_sifre'", (yeni_sifre1,))
                 conn.commit()
                 st.success("Yönetici şifreniz başarıyla değiştirildi! Bir sonraki girişinizde yeni şifrenizi kullanabilirsiniz.")
