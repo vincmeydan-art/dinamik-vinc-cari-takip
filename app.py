@@ -41,12 +41,7 @@ st.markdown(
     }
 
     /* --- EXPANDER (GENİŞLETİLEBİLİR KUTU) TÜM DURUMLAR KESİN ÇÖZÜM --- */
-    div[data-testid="stExpander"] {
-        background-color: #1e1e1e !important;
-        border: 1px solid #444444 !important;
-        border-radius: 8px !important;
-    }
-    
+    div[data-testid="stExpander"], 
     details[data-testid="stExpander"] {
         background-color: #1e1e1e !important;
         border: 1px solid #444444 !important;
@@ -59,10 +54,11 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    /* Açık veya kapalı fark etmeksizin başlık içindeki tüm elemanlar beyaz ve net */
+    /* Tıklandığında veya açık/kapalı durumdayken başlık içerisindeki tüm metinlerin beyaz kalması */
     details[data-testid="stExpander"] summary span, 
     details[data-testid="stExpander"] summary p,
     details[data-testid="stExpander"] summary div,
+    details[data-testid="stExpander"] summary strong,
     details[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
@@ -70,6 +66,13 @@ st.markdown(
 
     details[data-testid="stExpander"] summary:hover {
         background-color: #2a2a2a !important;
+    }
+    
+    details[data-testid="stExpander"][open] summary {
+        background-color: #252525 !important;
+        border-bottom: 1px solid #444444 !important;
+        border-bottom-left-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
     }
 
     /* --- CODE BLOKLARI VE METİN KUTULARI (st.code) KESİN ÇÖZÜM --- */
