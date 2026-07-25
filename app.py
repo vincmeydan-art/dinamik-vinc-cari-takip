@@ -18,6 +18,7 @@ st.markdown(
     .stApp {
         background-color: #121212;
         color: #e0e0e0;
+        color-scheme: dark;
     }
     header[data-testid="stHeader"] {
         background-color: transparent;
@@ -46,6 +47,7 @@ st.markdown(
         background-color: #1e1e1e !important;
         border: 1px solid #444444 !important;
         border-radius: 8px !important;
+        box-shadow: none !important;
     }
 
     details[data-testid="stExpander"] summary {
@@ -54,7 +56,15 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    /* Tıklandığında, açık veya kapalı durumdayken başlık içerisindeki tüm metinlerin ve ikonların beyaz kalması */
+    /* Tıklandığında, fokuslandığında veya açık/kapalı durumdayken arka planın ve metinlerin beyazlamasını engelle */
+    details[data-testid="stExpander"] summary:focus,
+    details[data-testid="stExpander"] summary:active,
+    details[data-testid="stExpander"] summary:focus-visible {
+        background-color: #1e1e1e !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
     details[data-testid="stExpander"] summary *, 
     details[data-testid="stExpander"] summary span, 
     details[data-testid="stExpander"] summary p,
