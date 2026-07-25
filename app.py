@@ -1,4 +1,4 @@
-import streamlit as sT
+import streamlit as st
 import os
 from datetime import datetime
 import psycopg2
@@ -272,7 +272,7 @@ with st.sidebar:
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v4.0 (Cloud)</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v4.1 (Cloud)</span></div>', unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     
     menu_options = {
@@ -343,24 +343,20 @@ elif secim == "📝 Yeni İş / Operasyon":
         
         col1, col2 = st.columns(2)
         with col1:
-            # Türkçe ay ve gün isimleriyle tarih gösterimi için HTML/JS takviyeli özel format alanı
             st.markdown("""
                 <style>
-                /* Takvim arayüzünü Türkçe etiketlerle uyumlu hale getiren düzenleme */
                 input[type="date"]::-webkit-calendar-picker-indicator {
                     cursor: pointer;
                 }
                 </style>
             """, unsafe_allow_html=True)
             
-            # Türkçe ay/gün gösterimi için format fonksiyonu
             tr_aylar = {1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran", 7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık"}
             tr_gunler = {"Monday": "Pazartesi", "Tuesday": "Salı", "Wednesday": "Çarşamba", "Thursday": "Perşembe", "Friday": "Cuma", "Saturday": "Cumartesi", "Sunday": "Pazar"}
             
             secilen_tarih = st.date_input("İş Tarihi", datetime.now())
             tarih = secilen_tarih.strftime("%d.%m.%Y")
             
-            # Seçilen tarihin Türkçe okunuşunu gösteren şık bilgi kutusu
             gun_en = secilen_tarih.strftime("%A")
             gun_tr = tr_gunler.get(gun_en, gun_en)
             ay_tr = tr_aylar.get(secilen_tarih.month, "")
