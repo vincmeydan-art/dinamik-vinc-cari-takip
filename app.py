@@ -174,7 +174,7 @@ st.markdown(
         -webkit-text-fill-color: #ffffff !important;
     }
     
-    /* DROPDOWN AÇILAN PENCERE VE LİSTE ARKAPLANLARI (FOTOĞRAFKİ BEYAZLIĞI YOK EDEN KISIM) */
+    /* DROPDOWN AÇILAN PENCERE VE LİSTE ARKAPLANLARI */
     div[data-baseweb="popover"], 
     div[data-baseweb="menu"], 
     ul[role="listbox"],
@@ -528,7 +528,7 @@ with st.sidebar:
 
   st.markdown(
       '<div style="text-align: center; margin-top: 10px;"><span'
-      ' class="pro-badge">PRO EDITION v4.1 (Cloud)</span></div>',
+      ' class="pro-badge">PRO EDITION v4.2 (Cloud)</span></div>',
       unsafe_allow_html=True,
   )
   st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
@@ -873,16 +873,73 @@ elif secim == "📂 İş Geçmişi & Tahsilat":
         if foto and os.path.exists(foto):
           st.image(foto, caption="Saha Belgesi", width=250)
 
+        st.markdown("---")
+        st.markdown("✏️ **Bu İşi ve Ödemeyi Düzenle / Güncelle**")
+
+        # Düzenleme Formu veya Alanları
+        with st.form(key=f"edit_form_{is_id}"):
+          e_tarih = st.text_input("Tarih (GG.AA.YYYY)", value=str(tarih))
+          e_santiye = st.text_input("Şantiye Adı", value=str(santiye))
+          e_vinc = st.text_input("Vinç / Plaka", value=str(vinc))
+          e_operator = st.text_input("Operatör", value=str(operator))
+          e_aciklama = st.text_area("İş Açıklaması", value=str(aciklama))
+
+          col_f1, col_f2 = st.columns(2)
+          with col_f1:
+            e_toplam = st.number_input(
+                "Toplam Tutar (TL)",
+                min_value=0.0,
+                value=float(toplam),
+                step=100.0,
+            )
+          with col_f2:
+            e_odenen = st.number_input(
+                "Ödenen Tutar (TL) [Düzeltme / Geri Almak İçin Yazın]",
+                min_value=0.0,
+                value=float(odenen),
+                step=100.0,
+            )
+
+          guncelle_pressed = st.form_submit_button(
+              "💾 Değişiklikleri Kaydet / Güncelle"
+          )
+
+          if guncelle_pressed:
+            yeni_kalan = e_toplam - e_odenen
+            cursor.execute(
+                """
+                        UPDATE isler 
+                        SET tarih = %s, santiye = %s, vinc_plaka = %s, operator = %s, 
+                            aciklama = %s, toplam_tutar = %s, odenen = %s, kalan = %s 
+                        WHERE id = %s
+                    """,
+                (
+                    e_tarih,
+                    e_santiye,
+                    e_vinc,
+                    e_operator,
+                    e_aciklama,
+                    e_toplam,
+                    e_odenen,
+                    yeni_kalan,
+                    is_id,
+                ),
+            )
+            conn.commit()
+            st.success("İş bilgileri ve ödeme başarıyla güncellendi!")
+            st.rerun()
+
+        st.markdown("---")
         col_tahsilat, col_sil = st.columns(2)
         with col_tahsilat:
           tahsilat_miktari = st.number_input(
-              f"Tahsilat Ekle (TL) [ID: {is_id}]",
+              f"Hızlı Tahsilat Ekle (TL) [ID: {is_id}]",
               min_value=0.0,
               value=0.0,
               step=500.0,
               key=f"t_miktar_{is_id}",
           )
-          if st.button(f"💵 Ödeme Al / Düş", key=f"t_btn_{is_id}"):
+          if st.button(f"💵 Hızlı Ödeme Al", key=f"t_btn_{is_id}"):
             if tahsilat_miktari > 0:
               yeni_odenen = odenen + tahsilat_miktari
               yeni_kalan = toplam - yeni_odenen
@@ -900,7 +957,7 @@ elif secim == "📂 İş Geçmişi & Tahsilat":
           if st.button(f"🗑️ İşi Komple Sil", key=f"is_sil_{is_id}"):
             cursor.execute("DELETE FROM isler WHERE id = %s", (is_id,))
             conn.commit()
-            st.warning("İş silindi!")
+            st.error("İş silindi!")
             st.rerun()
   else:
     st.info("Kayıtlı iş bulunmuyor.")
