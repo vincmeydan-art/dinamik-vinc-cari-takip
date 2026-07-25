@@ -113,7 +113,7 @@ if not st.session_state["giris_yapildi"]:
                     
                     if m_submitted:
                         m_id = musteri_secenekleri[secilen_firma]
-                        cursor.execute("SELECT sifre FROM musteriler WHERE id = ?", (m_id,))
+                        cursor.execute("SELECT sifre FROM musteriler WHERE id = %s", (m_id,))
                         db_res = cursor.fetchone()
                         db_sifre = db_res[0] if db_res and db_res[0] else "1234"
                             
