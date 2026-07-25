@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- GENEL ARKA PLAN, EXPANDER VE AÇILIR MENÜ KESİN ÇÖZÜMÜ ---
+# --- GENEL ARKA PLAN VE EXPANDER JAVASCRIPT / CSS ÇÖZÜMÜ ---
 st.markdown(
     """
     <style>
@@ -41,13 +41,12 @@ st.markdown(
         letter-spacing: 0.3px;
     }
 
-    /* --- EXPANDER (GENİŞLETİLEBİLİR KUTU) TÜM DURUMLAR KESİN ÇÖZÜM --- */
+    /* --- EXPANDER (GENİŞLETİLEBİLİR KUTU) KESİN ÇÖZÜM --- */
     div[data-testid="stExpander"], 
     details[data-testid="stExpander"] {
         background-color: #1e1e1e !important;
         border: 1px solid #444444 !important;
         border-radius: 8px !important;
-        box-shadow: none !important;
     }
 
     details[data-testid="stExpander"] summary {
@@ -56,22 +55,12 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    /* Tıklandığında, fokuslandığında veya açık/kapalı durumdayken arka planın ve metinlerin beyazlamasını engelle */
-    details[data-testid="stExpander"] summary:focus,
-    details[data-testid="stExpander"] summary:active,
-    details[data-testid="stExpander"] summary:focus-visible {
-        background-color: #1e1e1e !important;
-        outline: none !important;
-        box-shadow: none !important;
-    }
-
     details[data-testid="stExpander"] summary *, 
     details[data-testid="stExpander"] summary span, 
     details[data-testid="stExpander"] summary p,
     details[data-testid="stExpander"] summary div,
     details[data-testid="stExpander"] summary strong,
-    details[data-testid="stExpander"] summary svg,
-    details[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p {
+    details[data-testid="stExpander"] summary svg {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
@@ -80,15 +69,8 @@ st.markdown(
     details[data-testid="stExpander"] summary:hover {
         background-color: #2a2a2a !important;
     }
-    
-    details[data-testid="stExpander"][open] summary {
-        background-color: #252525 !important;
-        border-bottom: 1px solid #444444 !important;
-        border-bottom-left-radius: 0px !important;
-        border-bottom-right-radius: 0px !important;
-    }
 
-    /* --- CODE BLOKLARI VE METİN KUTULARI (st.code) KESİN ÇÖZÜM --- */
+    /* --- CODE BLOKLARI --- */
     pre, code, div[data-testid="stCodeBlock"], .stCode {
         background-color: #1a1a1a !important;
         color: #4CAF50 !important;
@@ -101,26 +83,19 @@ st.markdown(
         -webkit-text-fill-color: #e0e0e0 !important;
     }
 
-    /* --- TÜM BUTONLAR VE FORM GİRİŞ BUTONLARI İÇİN NET KOYU/SİYAH METİN --- */
+    /* --- BUTONLAR --- */
     .stButton>button, 
-    div[data-testid="stFormSubmitButton"]>button,
-    button[kind="secondaryFormSubmit"],
-    button[kind="primaryFormSubmit"] {
+    div[data-testid="stFormSubmitButton"]>button {
         width: 100% !important;
         border-radius: 8px !important;
         font-weight: 800 !important;
-        letter-spacing: 0.5px !important;
-        transition: all 0.3s ease !important;
         border: 1px solid #ff9800 !important;
         background-color: #ff9800 !important;
         color: #000000 !important;
     }
 
     .stButton>button:hover, 
-    div[data-testid="stFormSubmitButton"]>button:hover,
-    button[kind="secondaryFormSubmit"]:hover,
-    button[kind="primaryFormSubmit"]:hover {
-        border-color: #ffb703 !important;
+    div[data-testid="stFormSubmitButton"]>button:hover {
         background-color: #ffb703 !important;
         color: #000000 !important;
     }
@@ -131,8 +106,8 @@ st.markdown(
         font-weight: 800 !important;
     }
 
-    /* --- METİN GİRİŞLERİ (TEXT_INPUT, TEXT_AREA) VE SAYI GİRİŞLERİ KESİN ÇÖZÜM --- */
-    input, textarea, div[data-baseweb="input"] > div, div[data-baseweb="base-input"] > input {
+    /* --- INPUT VE METİN ALANLARI --- */
+    input, textarea, div[data-baseweb="input"] > div {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
@@ -140,13 +115,7 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    textarea {
-        background-color: #1e1e1e !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    /* --- SELECTBOX VE AÇILIR LİSTE (POPOVER) BEYAZ ARKA PLAN KESİN ÇÖZÜMÜ --- */
+    /* --- SELECTBOX & MENÜLER --- */
     div[data-baseweb="select"] > div {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
@@ -157,32 +126,21 @@ st.markdown(
         color: #ffffff !important;
     }
     
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"], ul[data-baseweb="menu"] {
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #1a1a1a !important;
         border: 1px solid #444444 !important;
     }
     
-    div[data-baseweb="popover"] div, div[data-baseweb="menu"] div {
+    li[role="option"] {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
     }
 
-    li[role="option"], div[role="option"] {
-        background-color: #1a1a1a !important;
-        color: #ffffff !important;
-    }
-    
-    li[role="option"] span, div[role="option"] span {
-        color: #ffffff !important;
-        font-weight: 600 !important;
-    }
-
-    li[role="option"]:hover, div[role="option"]:hover, li[role="option"] [aria-selected="true"] {
+    li[role="option"]:hover, li[role="option"] [aria-selected="true"] {
         background-color: #ff9800 !important;
         color: #000000 !important;
     }
-    
-    li[role="option"]:hover span, div[role="option"]:hover span {
+    li[role="option"]:hover span {
         color: #000000 !important;
     }
 
@@ -206,6 +164,24 @@ st.markdown(
         margin-bottom: 10px;
     }
     </style>
+
+    <script>
+    // Streamlit elementleri dinamik bastığı için tıklandığında arkaplanın beyazlamasını JS ile engelliyoruz
+    document.addEventListener('click', function(e) {
+        var summary = e.target.closest('details[data-testid="stExpander"] summary');
+        if (summary) {
+            setTimeout(function() {
+                summary.style.backgroundColor = '#1e1e1e';
+                summary.style.color = '#ffffff';
+                var elements = summary.querySelectorAll('*');
+                elements.forEach(function(el) {
+                    el.style.color = '#ffffff';
+                    el.style.webkitTextFillColor = '#ffffff';
+                });
+            }, 10);
+        }
+    });
+    </script>
     """,
     unsafe_allow_html=True,
 )
