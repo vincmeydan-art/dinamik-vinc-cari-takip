@@ -54,13 +54,16 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    /* Tıklandığında veya açık/kapalı durumdayken başlık içerisindeki tüm metinlerin beyaz kalması */
+    /* Tıklandığında, açık veya kapalı durumdayken başlık içerisindeki tüm metinlerin ve ikonların beyaz kalması */
+    details[data-testid="stExpander"] summary *, 
     details[data-testid="stExpander"] summary span, 
     details[data-testid="stExpander"] summary p,
     details[data-testid="stExpander"] summary div,
     details[data-testid="stExpander"] summary strong,
+    details[data-testid="stExpander"] summary svg,
     details[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p {
         color: #ffffff !important;
+        fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
 
