@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- GENEL ARKA PLAN VE EXPANDER KESİN ÇÖZÜM (SERT CSS KİLİDİ) ---
+# --- GENEL ARKA PLAN VE NUMBER INPUT (+ / - BUTONLARI) KESİN ÇÖZÜM ---
 st.markdown(
     """
     <style>
@@ -41,7 +41,7 @@ st.markdown(
         letter-spacing: 0.3px;
     }
 
-    /* --- EXPANDER VE AÇILAN DETAY KUTULARI (BEYAZLAMA KARŞITI KESİN ÇÖZÜM) --- */
+    /* --- EXPANDER VE AÇILAN DETAY KUTULARI --- */
     div[data-testid="stExpander"], 
     details[data-testid="stExpander"],
     div[data-testid="stExpander"] > div,
@@ -75,7 +75,6 @@ st.markdown(
         background-color: #2a2a2a !important;
     }
 
-    /* Expander açıldığında beliren içerik kapsayıcısı ve alt elemanları */
     div[data-testid="stExpanderDetails"],
     div[data-testid="stExpanderDetails"] > div,
     details[data-testid="stExpander"][open] div {
@@ -91,6 +90,40 @@ st.markdown(
     div[data-testid="stExpanderDetails"] span {
         color: #e0e0e0 !important;
         -webkit-text-fill-color: #e0e0e0 !important;
+    }
+
+    /* --- NUMBER INPUT (+ / - BUTONLARI VE KUTU) KESİN ÇÖZÜM --- */
+    div[data-testid="stNumberInput"] input {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-color: #444444 !important;
+    }
+    
+    div[data-testid="stNumberInput"] div[data-baseweb="spinbutton"] {
+        background-color: #1e1e1e !important;
+        border-color: #444444 !important;
+        border-radius: 8px !important;
+    }
+
+    /* + ve - butonlarının arka planı ve ikon renkleri */
+    div[data-testid="stNumberInput"] button {
+        background-color: #2a2a2a !important;
+        border-color: #444444 !important;
+    }
+
+    div[data-testid="stNumberInput"] button svg {
+        fill: #ffffff !important;
+        color: #ffffff !important;
+    }
+
+    div[data-testid="stNumberInput"] button:hover {
+        background-color: #ff9800 !important;
+    }
+
+    div[data-testid="stNumberInput"] button:hover svg {
+        fill: #000000 !important;
+        color: #000000 !important;
     }
 
     /* --- CODE BLOKLARI --- */
