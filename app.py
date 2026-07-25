@@ -6,7 +6,7 @@ import psycopg2
 # Sayfa Konfigürasyonu
 st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide", initial_sidebar_state="expanded")
 
-# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ ---
+# --- GENEL ARKA PLAN VE FORM ELEMANLARI KESİN KOYU TEMA DÜZELTMELERİ ---
 st.markdown("""
     <style>
     .stApp {
@@ -62,6 +62,21 @@ st.markdown("""
     div[data-testid="stFormSubmitButton"]>button * {
         color: #000000 !important;
         font-weight: 800 !important;
+    }
+
+    /* --- METİN GİRİŞLERİ (TEXT_INPUT, TEXT_AREA) VE SAYI GİRİŞLERİ KESİN ÇÖZÜM --- */
+    input, textarea, div[data-baseweb="input"] > div, div[data-baseweb="base-input"] > input {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-color: #444444 !important;
+        border-radius: 8px !important;
+    }
+
+    textarea {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     /* --- SELECTBOX VE AÇILIR LİSTE (POPOVER) KESİN ÇÖZÜM --- */
@@ -408,7 +423,7 @@ elif secim == "📝 Yeni İş / Operasyon":
     musteriler = cursor.fetchall()
     
     if not musteriler:
-        st.warning("⚠️ Önce sol menüden 'Müşteri Yönetimi' kısmına giderek bir müşteri eklemelisiniz!")
+        st.warning("⚠️ Önce sol menüden 'Müşteri Yönetimi' kısmına gidfromCharCode bir müşteri eklemelisiniz!")
     else:
         musteri_dict = {m[1]: m[0] for m in musteriler}
         secilen_musteri_adi = st.selectbox("Müşteri Firma Seç", list(musteri_dict.keys()))
@@ -440,7 +455,6 @@ elif secim == "📝 Yeni İş / Operasyon":
             with t_col3:
                 secilen_yil = st.selectbox("Yıl", list(range(simdiki_yil - 2, simdiki_yil + 3)), index=2)
             
-            # Geçerlilik kontrolü ve tarih oluşturma
             try:
                 secilen_tarih_obj = datetime(secilen_yil, secilen_ay, secilen_gun)
             except ValueError:
