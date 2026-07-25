@@ -8,7 +8,7 @@ def init_db():
     database_url = st.secrets.get("DATABASE_URL")
     
     if not database_url:
-        st.error("⚠️ Streamlit secrets içinde DATABASE_URL bulunamadı! Lütfen Adım 3'ü uygulayın.")
+        st.error("⚠️ Streamlit secrets içinde DATABASE_URL bulunamadı! Lütfen ayarlardan DATABASE_URL ekleyin.")
         st.stop()
         
     conn = psycopg2.connect(database_url, sslmode='require')
@@ -183,6 +183,18 @@ if st.session_state["giris_turu"] == "musteri":
         st.session_state["aktif_musteri_id"] = None
         st.rerun()
 
+    # --- MÜŞTERİ PANELİ ALT BİLGİ (İLETİŞİM VE IBAN) ---
+    st.markdown("<br><hr>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center; color: #fff;'>
+            <h4 style='color: #ff9800; margin-bottom: 10px;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME BİLGİLERİ</h4>
+            <p style='margin: 5px 0; font-size: 15px;'>📞 <b>İletişim / Cep Tel:</b> 0534 651 65 16</p>
+            <p style='margin: 5px 0; font-size: 15px;'>🏦 <b>Banka:</b> Garanti Bankası</p>
+            <p style='margin: 5px 0; font-size: 15px;'>👤 <b>Hesap Sahibi:</b> Abdulhamid Toğuşlu</p>
+            <p style='margin: 8px 0 0 0; font-size: 16px; color: #4CAF50;'>💳 <b>IBAN:</b> <code>TR12 0006 2001 1910 0006 8866 91</code></p>
+        </div>
+    """, unsafe_allow_html=True)
+
     st.stop()
 
 
@@ -248,7 +260,7 @@ with st.sidebar:
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.8 (Cloud)</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.9 (Cloud)</span></div>', unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     
     menu_options = {
@@ -497,7 +509,7 @@ elif secim == "👥 Müşteri Yönetimi":
     else:
         st.info("Henüz müşteri eklenmemiş.")
 
-# --- 5. ADMIN ŞİFRE DEĞİŞTİRME ---
+# --- 5. ADMIN ŞİFRE DEĞİŞTİR ---
 elif secim == "⚙️ Admin Şifre Değiştir":
     st.header("⚙️ Yönetici (Admin) Şifre Güncelleme")
     st.write("Yönetici panelinize giriş yaptığınız şifreyi buradan güvenli bir şekilde değiştirebilirsiniz.")
