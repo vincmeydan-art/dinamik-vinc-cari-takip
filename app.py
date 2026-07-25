@@ -488,7 +488,7 @@ if st.session_state["giris_turu"] == "musteri":
     st.session_state["aktif_musteri_id"] = None
     st.rerun()
 
-  # --- MÜŞTERİ PANELİ ALT BİLGİ ---
+  # --- MÜŞTERİ PANELİ ALT BİLGİ VE RESİMLER ---
   st.markdown("<br><hr>", unsafe_allow_html=True)
   st.markdown(
       """
@@ -504,6 +504,19 @@ if st.session_state["giris_turu"] == "musteri":
     """,
       unsafe_allow_html=True,
   )
+
+  # IBAN bilgisinin hemen altında yan yana iki resim
+  r_col1, r_col2 = st.columns(2)
+  with r_col1:
+    if os.path.exists("1br9qfwltvj7f5d1hfu.jpg"):
+      st.image("1br9qfwltvj7f5d1hfu.jpg", use_container_width=True)
+    else:
+      st.warning("1br9qfwltvj7f5d1hfu.jpg dosyası bulunamadı.")
+  with r_col2:
+    if os.path.exists("fNp07vLVkbFFPLCz.jpg"):
+      st.image("fNp07vLVkbFFPLCz.jpg", use_container_width=True)
+    else:
+      st.warning("fNp07vLVkbFFPLCz.jpg dosyası bulunamadı.")
 
   st.stop()
 
