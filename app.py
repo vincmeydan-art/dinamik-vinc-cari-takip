@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- GENEL ARKA PLAN VE NUMBER INPUT (+ / - BUTONLARI) KESİN ÇÖZÜM ---
+# --- GENEL ARKA PLAN VE TÜM BİLEŞENLER KESİN ÇÖZÜM ---
 st.markdown(
     """
     <style>
@@ -92,7 +92,7 @@ st.markdown(
         -webkit-text-fill-color: #e0e0e0 !important;
     }
 
-    /* --- NUMBER INPUT (+ / - BUTONLARI VE KUTU) KESİN ÇÖZÜM --- */
+    /* --- NUMBER INPUT (+ / - BUTONLARI VE KUTU) --- */
     div[data-testid="stNumberInput"] input {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
@@ -106,7 +106,6 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    /* + ve - butonlarının arka planı ve ikon renkleri */
     div[data-testid="stNumberInput"] button {
         background-color: #2a2a2a !important;
         border-color: #444444 !important;
@@ -171,7 +170,7 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    /* --- SELECTBOX & MENÜLER --- */
+    /* --- SELECTBOX & AÇILIR LİSTELER (BEYAZ KISIMLAR KESİN ÇÖZÜM) --- */
     div[data-baseweb="select"] > div {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
@@ -182,22 +181,30 @@ st.markdown(
         color: #ffffff !important;
     }
     
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
+    div[data-baseweb="popover"], 
+    div[data-baseweb="menu"], 
+    ul[role="listbox"],
+    div[data-baseweb="popover"] > div {
         background-color: #1a1a1a !important;
         border: 1px solid #444444 !important;
-    }
-    
-    li[role="option"] {
-        background-color: #1a1a1a !important;
         color: #ffffff !important;
     }
+    
+    li[role="option"], 
+    li[role="option"] div, 
+    li[role="option"] span {
+        background-color: #1a1a1a !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
 
-    li[role="option"]:hover, li[role="option"] [aria-selected="true"] {
+    li[role="option"]:hover, 
+    li[role="option"]:hover div,
+    li[role="option"]:hover span, 
+    li[role="option"][aria-selected="true"] {
         background-color: #ff9800 !important;
         color: #000000 !important;
-    }
-    li[role="option"]:hover span {
-        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
     }
 
     [data-testid="stSidebar"] {
@@ -304,7 +311,7 @@ if not st.session_state["giris_yapildi"]:
         """
             <div style='background-color: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; text-align: center;'>
                 <h1 style='color: #ff9800; font-size: 26px; margin-bottom: 5px;'>🏗️ DİNAMİK VİNÇ</h1>
-                <p style='color: #aaa; font-size: 13px;'>Operasyon ve Müşteri Portal Girişi</p>
+                <p style='color: #aaa; font-size: 13px;'>Operasyon and Müşteri Portal Girişi</p>
             </div>
         """,
         unsafe_allow_html=True,
