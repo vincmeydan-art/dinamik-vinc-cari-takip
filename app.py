@@ -6,7 +6,7 @@ import psycopg2
 # Sayfa Konfigürasyonu
 st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide", initial_sidebar_state="expanded")
 
-# --- GENEL ARKA PLAN VE FORM ELEMANLARI KESİN KOYU TEMA DÜZELTMELERİ ---
+# --- GENEL ARKA PLAN VE EXPANDER BAŞLIKLARI KESİN KOYU TEMA DÜZELTMELERİ ---
 st.markdown("""
     <style>
     .stApp {
@@ -32,6 +32,29 @@ st.markdown("""
         color: #aaaaaa;
         margin-bottom: 25px;
         letter-spacing: 0.3px;
+    }
+
+    /* --- EXPANDER (GENİŞLETİLEBİLİR KUTU) ÜST BAŞLIK KESİN ÇÖZÜM --- */
+    div[data-testid="stExpander"] {
+        background-color: #1e1e1e !important;
+        border: 1px solid #444444 !important;
+        border-radius: 8px !important;
+    }
+    
+    details[data-testid="stExpander"] summary {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
+    }
+
+    details[data-testid="stExpander"] summary span, 
+    details[data-testid="stExpander"] summary p,
+    details[data-testid="stExpander"] summary div {
+        color: #ffffff !important;
+    }
+
+    details[data-testid="stExpander"] summary:hover {
+        background-color: #2a2a2a !important;
     }
 
     /* --- TÜM BUTONLAR VE FORM GİRİŞ BUTONLARI İÇİN NET KOYU/SİYAH METİN --- */
@@ -423,7 +446,7 @@ elif secim == "📝 Yeni İş / Operasyon":
     musteriler = cursor.fetchall()
     
     if not musteriler:
-        st.warning("⚠️ Önce sol menüden 'Müşteri Yönetimi' kısmına gidfromCharCode bir müşteri eklemelisiniz!")
+        st.warning("⚠️ Önce sol menüden 'Müşteri Yönetimi' kısmına gidip bir müşteri eklemelisiniz!")
     else:
         musteri_dict = {m[1]: m[0] for m in musteriler}
         secilen_musteri_adi = st.selectbox("Müşteri Firma Seç", list(musteri_dict.keys()))
