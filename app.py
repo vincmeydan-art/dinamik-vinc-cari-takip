@@ -11,10 +11,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- GENEL ARKA PLAN VE TÜM BİLEŞENLER KESİN ÇÖZÜM ---
+# --- TÜM BİLEŞENLER VE AÇILIR LİSTELER KESİN !IMPORTANT ÇÖZÜMÜ ---
 st.markdown(
     """
     <style>
+    /* GENEL ARKA PLAN */
     .stApp {
         background-color: #121212 !important;
         color: #e0e0e0 !important;
@@ -24,24 +25,24 @@ st.markdown(
         background-color: transparent !important;
     }
     p, span, label, div {
-        color: #e0e0e0;
+        color: #e0e0e0 !important;
     }
     .main-header {
-        font-size: 26px;
-        font-weight: 800;
-        color: #ff9800;
-        margin-bottom: 0px;
-        letter-spacing: 0.8px;
-        text-transform: uppercase;
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        color: #ff9800 !important;
+        margin-bottom: 0px !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
     }
     .sub-header {
-        font-size: 13px;
-        color: #aaaaaa;
-        margin-bottom: 25px;
-        letter-spacing: 0.3px;
+        font-size: 13px !important;
+        color: #aaaaaa !important;
+        margin-bottom: 25px !important;
+        letter-spacing: 0.3px !important;
     }
 
-    /* --- EXPANDER VE AÇILAN DETAY KUTULARI --- */
+    /* EXPANDER Kutuları */
     div[data-testid="stExpander"], 
     details[data-testid="stExpander"],
     div[data-testid="stExpander"] > div,
@@ -92,7 +93,7 @@ st.markdown(
         -webkit-text-fill-color: #e0e0e0 !important;
     }
 
-    /* --- NUMBER INPUT (+ / - BUTONLARI VE KUTU) --- */
+    /* NUMBER INPUT */
     div[data-testid="stNumberInput"] input {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
@@ -125,7 +126,7 @@ st.markdown(
         color: #000000 !important;
     }
 
-    /* --- CODE BLOKLARI --- */
+    /* CODE BLOKLARI */
     pre, code, div[data-testid="stCodeBlock"], .stCode {
         background-color: #1a1a1a !important;
         color: #4CAF50 !important;
@@ -138,7 +139,7 @@ st.markdown(
         -webkit-text-fill-color: #e0e0e0 !important;
     }
 
-    /* --- BUTONLAR --- */
+    /* BUTONLAR */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button {
         width: 100% !important;
@@ -161,7 +162,7 @@ st.markdown(
         font-weight: 800 !important;
     }
 
-    /* --- INPUT VE METİN ALANLARI --- */
+    /* INPUT VE METİN ALANLARI */
     input, textarea, div[data-baseweb="input"] > div {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
@@ -170,7 +171,7 @@ st.markdown(
         border-radius: 8px !important;
     }
 
-    /* --- SELECTBOX & AÇILIR LİSTELER (BEYAZ KISIMLAR KESİN ÇÖZÜM) --- */
+    /* SELECTBOX & AÇILIR LİSTELER KESİN !IMPORTANT ÇÖZÜMÜ */
     div[data-baseweb="select"] > div {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
@@ -179,6 +180,7 @@ st.markdown(
     }
     div[data-baseweb="select"] span {
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
     
     div[data-baseweb="popover"], 
@@ -207,24 +209,26 @@ st.markdown(
         -webkit-text-fill-color: #000000 !important;
     }
 
+    /* SIDEBAR */
     [data-testid="stSidebar"] {
-        background-color: #181818;
-        border-right: 1px solid #333333;
+        background-color: #181818 !important;
+        border-right: 1px solid #333333 !important;
     }
     [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] span {
         color: #f0f0f0 !important;
     }
+    
     .pro-badge {
-        background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: bold;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        display: inline-block;
-        margin-bottom: 10px;
+        background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%) !important;
+        color: white !important;
+        padding: 4px 10px !important;
+        border-radius: 4px !important;
+        font-size: 10px !important;
+        font-weight: bold !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        display: inline-block !important;
+        margin-bottom: 10px !important;
     }
     </style>
     """,
