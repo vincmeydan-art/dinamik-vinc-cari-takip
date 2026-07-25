@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- GENEL ARKA PLAN VE EXPANDER JAVASCRIPT / CSS ÇÖZÜMÜ ---
+# --- GENEL ARKA PLAN VE EXPANDER KESİN ÇÖZÜM (MUTATION OBSERVER) ---
 st.markdown(
     """
     <style>
@@ -41,7 +41,7 @@ st.markdown(
         letter-spacing: 0.3px;
     }
 
-    /* --- EXPANDER (GENİŞLETİLEBİLİR KUTU) KESİN ÇÖZÜM --- */
+    /* --- EXPANDER VE AÇILAN DETAY KUTULARI (BEYAZLAMA KARŞITI) --- */
     div[data-testid="stExpander"], 
     details[data-testid="stExpander"] {
         background-color: #1e1e1e !important;
@@ -68,6 +68,19 @@ st.markdown(
 
     details[data-testid="stExpander"] summary:hover {
         background-color: #2a2a2a !important;
+    }
+
+    /* Expander açıldığında beliren içerik kapsayıcısı */
+    div[data-testid="stExpanderDetails"] {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+        border-top: 1px solid #333333 !important;
+        border-bottom-left-radius: 8px !important;
+        border-bottom-right-radius: 8px !important;
+    }
+    
+    div[data-testid="stExpanderDetails"] * {
+        color: #e0e0e0 !important;
     }
 
     /* --- CODE BLOKLARI --- */
@@ -166,19 +179,36 @@ st.markdown(
     </style>
 
     <script>
-    // Streamlit elementleri dinamik bastığı için tıklandığında arkaplanın beyazlamasını JS ile engelliyoruz
+    // Sayfadaki DOM değişikliklerini ve expander açılmalarını anlık yakalayıp koyu renge sabitleyen gözlemci
+    const observer = new MutationObserver(function(mutations) {
+        document.querySelectorAll('div[data-testid="stExpander"], details[data-testid="stExpander"]').forEach(function(el) {
+            el.style.backgroundColor = '#1e1e1e';
+        });
+        document.querySelectorAll('div[data-testid="stExpanderDetails"]').forEach(function(el) {
+            el.style.backgroundColor = '#1e1e1e';
+            el.style.color = '#ffffff';
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['open', 'class', 'style']
+    });
+
+    // Ekstra güvenlik için tıklama anında da tetikle
     document.addEventListener('click', function(e) {
-        var summary = e.target.closest('details[data-testid="stExpander"] summary');
-        if (summary) {
+        var expander = e.target.closest('details[data-testid="stExpander"]');
+        if (expander) {
             setTimeout(function() {
-                summary.style.backgroundColor = '#1e1e1e';
-                summary.style.color = '#ffffff';
-                var elements = summary.querySelectorAll('*');
-                elements.forEach(function(el) {
-                    el.style.color = '#ffffff';
-                    el.style.webkitTextFillColor = '#ffffff';
-                });
-            }, 10);
+                expander.style.backgroundColor = '#1e1e1e';
+                var details = expander.querySelector('div[data-testid="stExpanderDetails"]');
+                if (details) {
+                    details.style.backgroundColor = '#1e1e1e';
+                    details.style.color = '#ffffff';
+                }
+            }, 20);
         }
     });
     </script>
