@@ -6,7 +6,7 @@ import psycopg2
 # Sayfa Konfigürasyonu
 st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide", initial_sidebar_state="expanded")
 
-# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ (SELECTBOX AÇILIR LİSTE DÜZELTMELİ) ---
+# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ ---
 st.markdown("""
     <style>
     .stApp {
@@ -75,7 +75,6 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* Açılan liste kutusunun tamamı */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #1a1a1a !important;
         border: 1px solid #444444 !important;
@@ -86,7 +85,6 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* Liste elemanları (Seçenekler) */
     li[role="option"], div[role="option"] {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
@@ -418,25 +416,42 @@ elif secim == "📝 Yeni İş / Operasyon":
         
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown("""
-                <style>
-                input[type="date"]::-webkit-calendar-picker-indicator {
-                    cursor: pointer;
-                    filter: invert(1);
-                }
-                </style>
-            """, unsafe_allow_html=True)
+            st.markdown("📅 **İş Tarihi Belirleme**")
+            t_col1, t_col2, t_col3 = st.columns(3)
             
-            tr_aylar = {1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran", 7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık"}
-            tr_gunler = {"Monday": "Pazartesi", "Tuesday": "Salı", "Wednesday": "Çarşamba", "Thursday": "Perşembe", "Friday": "Cuma", "Saturday": "Cumartesi", "Sunday": "Pazar"}
+            simdiki_yil = datetime.now().year
+            simdiki_ay = datetime.now().month
+            simdiki_gun = datetime.now().day
             
-            secilen_tarih = st.date_input("İş Tarihi", datetime.now())
-            tarih = secilen_tarih.strftime("%d.%m.%Y")
+            tr_aylar_dict = {
+                1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran",
+                7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık"
+            }
+            tr_gunler_dict = {
+                "Monday": "Pazartesi", "Tuesday": "Salı", "Wednesday": "Çarşamba", 
+                "Thursday": "Perşembe", "Friday": "Cuma", "Saturday": "Cumartesi", "Sunday": "Pazar"
+            }
             
-            gun_en = secilen_tarih.strftime("%A")
-            gun_tr = tr_gunler.get(gun_en, gun_en)
-            ay_tr = tr_aylar.get(secilen_tarih.month, "")
-            st.caption(f"📅 Seçilen Tarih: **{secilen_tarih.day} {ay_tr} {secilen_tarih.year} ({gun_tr})**")
+            with t_col1:
+                secilen_gun = st.selectbox("Gün", list(range(1, 32)), index=simdiki_gun - 1)
+            with t_col2:
+                secilen_ay_isim = st.selectbox("Ay", list(tr_aylar_dict.values()), index=simdiki_ay - 1)
+                secilen_ay = [k for k, v in tr_aylar_dict.items() if v == secilen_ay_isim][0]
+            with t_col3:
+                secilen_yil = st.selectbox("Yıl", list(range(simdiki_yil - 2, simdiki_yil + 3)), index=2)
+            
+            # Geçerlilik kontrolü ve tarih oluşturma
+            try:
+                secilen_tarih_obj = datetime(secilen_yil, secilen_ay, secilen_gun)
+            except ValueError:
+                secilen_tarih_obj = datetime(simdiki_yil, simdiki_ay, simdiki_gun)
+                st.warning("⚠️ Seçilen ay bu günü içermediği için ayın son günü baz alındı.")
+                
+            tarih = secilen_tarih_obj.strftime("%d.%m.%Y")
+            gun_en = secilen_tarih_obj.strftime("%A")
+            gun_tr = tr_gunler_dict.get(gun_en, gun_en)
+            
+            st.success(f"Seçilen Tarih: **{secilen_tarih_obj.day} {secilen_ay_isim} {secilen_tarih_obj.year} ({gun_tr})**")
 
             santiye = st.text_input("Şantiye Adı / Konum")
             vinc = st.text_input("Vinç / Plaka (Örn: 34 VNC 01)")
