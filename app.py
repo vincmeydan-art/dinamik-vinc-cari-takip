@@ -129,14 +129,17 @@ if not st.session_state["giris_yapildi"]:
             else:
                 st.info("Sistemde kayıtlı müşteri bulunmuyor. Lütfen yöneticinin sizi kaydetmesini bekleyin.")
         
-        # --- GİRİŞ EKRANI ALT BİLGİ (İLETİŞİM VE IBAN) ---
+        # --- GİRİŞ EKRANI ALT BİLGİ (İLETİŞİM VE BÜYÜK IBAN) ---
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style='background-color: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #333; text-align: center; color: #fff;'>
-                <h5 style='color: #ff9800; margin-bottom: 8px;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME</h5>
-                <p style='margin: 3px 0; font-size: 13px;'>📞 <b>Cep Tel:</b> 0534 651 65 16</p>
-                <p style='margin: 3px 0; font-size: 13px;'>🏦 <b>Garanti Bankası</b> | 👤 <b>Abdulhamid Toğuşlu</b></p>
-                <p style='margin: 5px 0 0 0; font-size: 14px; color: #4CAF50;'>💳 <code>TR12 0006 2001 1910 0006 8866 91</code></p>
+            <div style='background-color: #161616; padding: 20px; border-radius: 12px; border: 1px solid #444; text-align: center; color: #fff;'>
+                <h4 style='color: #ff9800; margin-bottom: 12px; font-weight: 700;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME</h4>
+                <p style='margin: 6px 0; font-size: 15px;'>📞 <b>Cep Tel:</b> 0534 651 65 16</p>
+                <p style='margin: 6px 0; font-size: 15px;'>🏦 <b>Garanti Bankası</b> | 👤 <b>Abdulhamid Toğuşlu</b></p>
+                <div style='margin-top: 12px; padding: 12px; background-color: #0b0b0b; border-radius: 8px; border: 1px dashed #ff9800;'>
+                    <span style='font-size: 13px; color: #aaa; display: block; margin-bottom: 4px;'>ÖDEME İÇİN IBAN NUMARASI:</span>
+                    <span style='font-size: 18px; color: #4CAF50; font-weight: 900; letter-spacing: 1px;'>TR12 0006 2001 1910 0006 8866 91</span>
+                </div>
             </div>
         """, unsafe_allow_html=True)
         
@@ -195,15 +198,17 @@ if st.session_state["giris_turu"] == "musteri":
         st.session_state["aktif_musteri_id"] = None
         st.rerun()
 
-    # --- MÜŞTERİ PANELİ ALT BİLGİ (İLETİŞİM VE IBAN) ---
+    # --- MÜŞTERİ PANELİ ALT BİLGİ (İLETİŞİM VE BÜYÜK IBAN) ---
     st.markdown("<br><hr>", unsafe_allow_html=True)
     st.markdown("""
-        <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center; color: #fff;'>
-            <h4 style='color: #ff9800; margin-bottom: 10px;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME BİLGİLERİ</h4>
-            <p style='margin: 5px 0; font-size: 15px;'>📞 <b>İletişim / Cep Tel:</b> 0534 651 65 16</p>
-            <p style='margin: 5px 0; font-size: 15px;'>🏦 <b>Banka:</b> Garanti Bankası</p>
-            <p style='margin: 5px 0; font-size: 15px;'>👤 <b>Hesap Sahibi:</b> Abdulhamid Toğuşlu</p>
-            <p style='margin: 8px 0 0 0; font-size: 16px; color: #4CAF50;'>💳 <b>IBAN:</b> <code>TR12 0006 2001 1910 0006 8866 91</code></p>
+        <div style='background-color: #161616; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center; color: #fff;'>
+            <h3 style='color: #ff9800; margin-bottom: 15px; font-weight: 700;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME BİLGİLERİ</h3>
+            <p style='margin: 6px 0; font-size: 16px;'>📞 <b>İletişim / Cep Tel:</b> 0534 651 65 16</p>
+            <p style='margin: 6px 0; font-size: 16px;'>🏦 <b>Banka:</b> Garanti Bankası &nbsp;|&nbsp; 👤 <b>Hesap Sahibi:</b> Abdulhamid Toğuşlu</p>
+            <div style='margin-top: 15px; padding: 15px; background-color: #0b0b0b; border-radius: 8px; border: 1px dashed #ff9800;'>
+                <span style='font-size: 14px; color: #aaa; display: block; margin-bottom: 6px;'>ÖDEME YAPACAĞINIZ RESMİ IBAN NUMARASI:</span>
+                <span style='font-size: 20px; color: #4CAF50; font-weight: 900; letter-spacing: 1.5px;'>TR12 0006 2001 1910 0006 8866 91</span>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -277,7 +282,7 @@ with st.sidebar:
     
     menu_options = {
         "📊 Cari & Alacak Özeti": "Genel Finans ve Alacak Takibi",
-        "📝 Yeni İş / Operasyon": "Saha ve Kiralama Girişi",
+        "📝 Yeni İş / Operasyon": "Saha dan Kiralama Girişi",
         "📂 İş Geçmişi & Tahsilat": "Arşiv, Ödeme ve Dekontlar",
         "👥 Müşteri Yönetimi": "Firma ve İletişim Rehberi",
         "⚙️ Admin Şifre Değiştir": "Yönetici Güvenlik Ayarları"
