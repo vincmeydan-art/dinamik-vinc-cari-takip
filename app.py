@@ -3,6 +3,77 @@ import os
 from datetime import datetime
 import psycopg2
 
+# Sayfa Konfigürasyonu (Koyu tema zorlamasıyla)
+st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide", initial_sidebar_state="expanded")
+
+# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ (KOYU TEMA) ---
+st.markdown("""
+    <style>
+    /* Tüm ana uygulama arka planını koyu yap */
+    .stApp {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+    /* Üst menü ve header alanları */
+    header[data-testid="stHeader"] {
+        background-color: transparent;
+    }
+    /* Metin renklerinin koyu temada okunabilir olması */
+    p, span, label, div {
+        color: #e0e0e0;
+    }
+    .main-header {
+        font-size: 26px;
+        font-weight: 800;
+        color: #ff9800;
+        margin-bottom: 0px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+    }
+    .sub-header {
+        font-size: 13px;
+        color: #aaaaaa;
+        margin-bottom: 25px;
+        letter-spacing: 0.3px;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        border: 1px solid #444444;
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+    .stButton>button:hover {
+        border-color: #ff9800;
+        color: #ff9800;
+        background-color: #2b2b2b;
+    }
+    /* Kenar çubuğu (Sidebar) tasarımı */
+    [data-testid="stSidebar"] {
+        background-color: #181818;
+        border-right: 1px solid #333333;
+    }
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] span {
+        color: #f0f0f0 !important;
+    }
+    .pro-badge {
+        background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- BULUT VERİTABANI BAĞLANTISI (PostgreSQL / Supabase) ---
 def init_db():
     database_url = st.secrets.get("DATABASE_URL")
@@ -56,9 +127,6 @@ def init_db():
 
 conn, cursor = init_db()
 
-# Sayfa Konfigürasyonu
-st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide")
-
 # Oturum Durumu Kontrolleri
 if "giris_yapildi" not in st.session_state:
     st.session_state["giris_yapildi"] = False
@@ -75,9 +143,9 @@ if not st.session_state["giris_yapildi"]:
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style='background-color: #161616; padding: 25px; border-radius: 12px; border: 1px solid #333; text-align: center;'>
+            <div style='background-color: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #333; text-align: center;'>
                 <h1 style='color: #ff9800; font-size: 26px; margin-bottom: 5px;'>🏗️ DİNAMİK VİNÇ</h1>
-                <p style='color: #888; font-size: 13px;'>Operasyon ve Müşteri Portal Girişi</p>
+                <p style='color: #aaa; font-size: 13px;'>Operasyon ve Müşteri Portal Girişi</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -132,11 +200,11 @@ if not st.session_state["giris_yapildi"]:
         # --- GİRİŞ EKRANI ALT BİLGİ (İLETİŞİM VE BÜYÜK IBAN) ---
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style='background-color: #161616; padding: 20px; border-radius: 12px; border: 1px solid #444; text-align: center; color: #fff;'>
+            <div style='background-color: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #444; text-align: center; color: #fff;'>
                 <h4 style='color: #ff9800; margin-bottom: 12px; font-weight: 700;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME</h4>
                 <p style='margin: 6px 0; font-size: 15px;'>📞 <b>Cep Tel:</b> 0534 651 65 16</p>
                 <p style='margin: 6px 0; font-size: 15px;'>🏦 <b>Garanti Bankası</b> | 👤 <b>Abdulhamid Toğuşlu</b></p>
-                <div style='margin-top: 12px; padding: 12px; background-color: #0b0b0b; border-radius: 8px; border: 1px dashed #ff9800;'>
+                <div style='margin-top: 12px; padding: 12px; background-color: #121212; border-radius: 8px; border: 1px dashed #ff9800;'>
                     <span style='font-size: 13px; color: #aaa; display: block; margin-bottom: 4px;'>ÖDEME İÇİN IBAN NUMARASI:</span>
                     <span style='font-size: 18px; color: #4CAF50; font-weight: 900; letter-spacing: 1px;'>TR12 0006 2001 1910 0006 8866 91</span>
                 </div>
@@ -151,9 +219,9 @@ if not st.session_state["giris_yapildi"]:
 # ==========================================
 if st.session_state["giris_turu"] == "musteri":
     st.markdown(f"""
-        <div style='background-color: #fff3cd; padding: 20px; border-radius: 10px; border-left: 5px solid #ff9800; margin-bottom: 20px;'>
-            <h2 style='color: #856404; margin: 0;'>Hoş Geldiniz, {st.session_state["aktif_musteri_adi"]}</h2>
-            <p style='color: #666; margin: 5px 0 0 0;'>Buradan şirketinize ait tüm operasyonları, çalışma saatlerini ve güncel borç/bakiye durumunuzu inceleyebilirsiniz.</p>
+        <div style='background-color: #262211; padding: 20px; border-radius: 10px; border-left: 5px solid #ff9800; margin-bottom: 20px;'>
+            <h2 style='color: #ffb703; margin: 0;'>Hoş Geldiniz, {st.session_state["aktif_musteri_adi"]}</h2>
+            <p style='color: #ccc; margin: 5px 0 0 0;'>Buradan şirketinize ait tüm operasyonları, çalışma saatlerini ve güncel borç/bakiye durumunuzu inceleyebilirsiniz.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -201,11 +269,11 @@ if st.session_state["giris_turu"] == "musteri":
     # --- MÜŞTERİ PANELİ ALT BİLGİ (İLETİŞİM VE BÜYÜK IBAN) ---
     st.markdown("<br><hr>", unsafe_allow_html=True)
     st.markdown("""
-        <div style='background-color: #161616; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center; color: #fff;'>
+        <div style='background-color: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #444; text-align: center; color: #fff;'>
             <h3 style='color: #ff9800; margin-bottom: 15px; font-weight: 700;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME BİLGİLERİ</h3>
             <p style='margin: 6px 0; font-size: 16px;'>📞 <b>İletişim / Cep Tel:</b> 0534 651 65 16</p>
             <p style='margin: 6px 0; font-size: 16px;'>🏦 <b>Banka:</b> Garanti Bankası &nbsp;|&nbsp; 👤 <b>Hesap Sahibi:</b> Abdulhamid Toğuşlu</p>
-            <div style='margin-top: 15px; padding: 15px; background-color: #0b0b0b; border-radius: 8px; border: 1px dashed #ff9800;'>
+            <div style='margin-top: 15px; padding: 15px; background-color: #121212; border-radius: 8px; border: 1px dashed #ff9800;'>
                 <span style='font-size: 14px; color: #aaa; display: block; margin-bottom: 6px;'>ÖDEME YAPACAĞINIZ RESMİ IBAN NUMARASI:</span>
                 <span style='font-size: 20px; color: #4CAF50; font-weight: 900; letter-spacing: 1.5px;'>TR12 0006 2001 1910 0006 8866 91</span>
             </div>
@@ -218,60 +286,10 @@ if st.session_state["giris_turu"] == "musteri":
 # ==========================================
 # YÖNETİCİ PANELİ EKRANI
 # ==========================================
-st.markdown("""
-    <style>
-    .main-header {
-        font-size: 26px;
-        font-weight: 800;
-        color: #ff9800;
-        margin-bottom: 0px;
-        letter-spacing: 0.8px;
-        text-transform: uppercase;
-    }
-    .sub-header {
-        font-size: 13px;
-        color: #aaaaaa;
-        margin-bottom: 25px;
-        letter-spacing: 0.3px;
-    }
-    .stButton>button {
-        width: 100%;
-        border-radius: 8px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-        border: 1px solid #444444;
-    }
-    .stButton>button:hover {
-        border-color: #ff9800;
-        color: #ff9800;
-    }
-    [data-testid="stSidebar"] {
-        background-color: #f8f9fa;
-        border-right: 1px solid #e0e0e0;
-    }
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stMarkdown {
-        color: #212529 !important;
-    }
-    .pro-badge {
-        background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: bold;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        display: inline-block;
-        margin-bottom: 10px;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 with st.sidebar:
     logo_path = "logo.png"
     if os.path.exists(logo_path):
-        st.markdown("<div style='background-color: #fff3cd; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; text-align: center;'>", unsafe_allow_html=True)
+        st.markdown("<div style='background-color: #262211; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; text-align: center;'>", unsafe_allow_html=True)
         st.image(logo_path, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
@@ -352,6 +370,7 @@ elif secim == "📝 Yeni İş / Operasyon":
                 <style>
                 input[type="date"]::-webkit-calendar-picker-indicator {
                     cursor: pointer;
+                    filter: invert(1);
                 }
                 </style>
             """, unsafe_allow_html=True)
