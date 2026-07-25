@@ -6,7 +6,7 @@ import psycopg2
 # Sayfa Konfigürasyonu
 st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide", initial_sidebar_state="expanded")
 
-# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ ---
+# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ (SELECTBOX & BUTON DÜZELTMELİ) ---
 st.markdown("""
     <style>
     .stApp {
@@ -34,7 +34,7 @@ st.markdown("""
         letter-spacing: 0.3px;
     }
 
-    /* --- TÜM BUTONLAR VE FORM GİRİŞ BUTONLARI İÇİN NET KOYU/SİYAH METİN DÜZENLEMESİ --- */
+    /* --- TÜM BUTONLAR VE FORM GİRİŞ BUTONLARI İÇİN NET KOYU/SİYAH METİN --- */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button,
     button[kind="secondaryFormSubmit"],
@@ -62,6 +62,29 @@ st.markdown("""
     div[data-testid="stFormSubmitButton"]>button * {
         color: #000000 !important;
         font-weight: 800 !important;
+    }
+
+    /* --- SELECTBOX (FİRMA SEÇİM) OKUNARAK DÜZELTMESİ --- */
+    div[data-baseweb="select"] > div {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+        border-color: #444444 !important;
+        border-radius: 8px !important;
+    }
+    div[data-baseweb="select"] span {
+        color: #ffffff !important;
+    }
+    div[data-baseweb="popover"] div {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+    }
+    li[role="option"] {
+        background-color: #1e1e1e !important;
+        color: #ffffff !important;
+    }
+    li[role="option"]:hover {
+        background-color: #ff9800 !important;
+        color: #000000 !important;
     }
 
     [data-testid="stSidebar"] {
@@ -385,7 +408,7 @@ elif secim == "📝 Yeni İş / Operasyon":
                 </style>
             """, unsafe_allow_html=True)
             
-            tr_aylar = {1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran", 7: "Temmuz", 8: "Ağustos", 9: "Eylul", 10: "Ekim", 11: "Kasım", 12: "Aralık"}
+            tr_aylar = {1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran", 7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık"}
             tr_gunler = {"Monday": "Pazartesi", "Tuesday": "Salı", "Wednesday": "Çarşamba", "Thursday": "Perşembe", "Friday": "Cuma", "Saturday": "Cumartesi", "Sunday": "Pazar"}
             
             secilen_tarih = st.date_input("İş Tarihi", datetime.now())
