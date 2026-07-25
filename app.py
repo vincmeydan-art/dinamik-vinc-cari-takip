@@ -6,7 +6,7 @@ import psycopg2
 # Sayfa Konfigürasyonu
 st.set_page_config(page_title="Dinamik Vinç | Güvenli Yönetim Sistemi", page_icon="🏗️", layout="wide", initial_sidebar_state="expanded")
 
-# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ (SELECTBOX LİSTE KUTUSU DÜZELTMELİ) ---
+# --- GENEL ARKA PLAN VE ARAYÜZ STİLLERİ (SELECTBOX AÇILIR LİSTE DÜZELTMELİ) ---
 st.markdown("""
     <style>
     .stApp {
@@ -34,7 +34,7 @@ st.markdown("""
         letter-spacing: 0.3px;
     }
 
-    /* --- TÜM BUTONLAR İÇİN NET KOYU/SİYAH METİN --- */
+    /* --- TÜM BUTONLAR VE FORM GİRİŞ BUTONLARI İÇİN NET KOYU/SİYAH METİN --- */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button,
     button[kind="secondaryFormSubmit"],
@@ -64,37 +64,45 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* --- SELECTBOX VE AÇILIR LİSTE (DROPDOWN) KESİN ÇÖZÜMÜ --- */
+    /* --- SELECTBOX VE AÇILIR LİSTE (POPOVER) KESİN ÇÖZÜM --- */
     div[data-baseweb="select"] > div {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
-        border-color: #555555 !important;
+        border-color: #444444 !important;
         border-radius: 8px !important;
     }
     div[data-baseweb="select"] span {
         color: #ffffff !important;
     }
-    /* Açılan liste kutusunun arka planı ve metinleri */
+    
+    /* Açılan liste kutusunun tamamı */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #1a1a1a !important;
-        color: #ffffff !important;
+        border: 1px solid #444444 !important;
     }
-    div[data-baseweb="popover"] div {
-        background-color: transparent !important;
-        color: #ffffff !important;
-    }
-    li[role="option"] {
+    
+    div[data-baseweb="popover"] div, div[data-baseweb="menu"] div {
         background-color: #1a1a1a !important;
         color: #ffffff !important;
     }
-    li[role="option"] div, li[role="option"] span {
+
+    /* Liste elemanları (Seçenekler) */
+    li[role="option"], div[role="option"] {
+        background-color: #1a1a1a !important;
         color: #ffffff !important;
     }
-    li[role="option"]:hover {
+    
+    li[role="option"] span, div[role="option"] span {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    li[role="option"]:hover, div[role="option"]:hover, li[role="option"] [aria-selected="true"] {
         background-color: #ff9800 !important;
         color: #000000 !important;
     }
-    li[role="option"]:hover div, li[role="option"]:hover span {
+    
+    li[role="option"]:hover span, div[role="option"]:hover span {
         color: #000000 !important;
     }
 
@@ -293,10 +301,11 @@ if st.session_state["giris_turu"] == "musteri":
     if isler:
         for is_item in isler:
             i_id, tarih, santiye, vinc, operator, aciklama, sure, toplam, odenen, kalan = is_item
+            sure_str = f"{sure} Saat" if "Saat" in aciklama or sure < 24 else f"{int(sure)} Gün"
             
             with st.expander(f"📅 Tarih: {tarih} | Şantiye: {santiye} | Kalan Borç: **{kalan:,.2f} TL**"):
                 st.write(f"**Vinç / Plaka:** {vinc if vinc else 'Belirtilmemiş'} | **Operatör:** {operator if operator else 'Belirtilmemiş'}")
-                st.write(f"**Çalışma Süresi / Miktarı:** {sure}")
+                st.write(f"**Çalışma Süresi / Miktarı:** {sure_str}")
                 st.write(f"**İş Açıklaması / Detay:** {aciklama}")
                 st.markdown("---")
                 st.write(f"**Toplam Tutar:** {toplam:,.2f} TL | **Ödenen:** {odenen:,.2f} TL | **Kalan:** **{kalan:,.2f} TL**")
