@@ -11,17 +11,17 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- GENEL ARKA PLAN VE EXPANDER KESİN ÇÖZÜM (MUTATION OBSERVER) ---
+# --- GENEL ARKA PLAN VE EXPANDER KESİN ÇÖZÜM (SERT CSS KİLİDİ) ---
 st.markdown(
     """
     <style>
     .stApp {
-        background-color: #121212;
-        color: #e0e0e0;
-        color-scheme: dark;
+        background-color: #121212 !important;
+        color: #e0e0e0 !important;
+        color-scheme: dark !important;
     }
     header[data-testid="stHeader"] {
-        background-color: transparent;
+        background-color: transparent !important;
     }
     p, span, label, div {
         color: #e0e0e0;
@@ -41,15 +41,18 @@ st.markdown(
         letter-spacing: 0.3px;
     }
 
-    /* --- EXPANDER VE AÇILAN DETAY KUTULARI (BEYAZLAMA KARŞITI) --- */
+    /* --- EXPANDER VE AÇILAN DETAY KUTULARI (BEYAZLAMA KARŞITI KESİN ÇÖZÜM) --- */
     div[data-testid="stExpander"], 
-    details[data-testid="stExpander"] {
+    details[data-testid="stExpander"],
+    div[data-testid="stExpander"] > div,
+    details[data-testid="stExpander"] > div {
         background-color: #1e1e1e !important;
         border: 1px solid #444444 !important;
         border-radius: 8px !important;
     }
 
-    details[data-testid="stExpander"] summary {
+    details[data-testid="stExpander"] summary,
+    div[data-testid="stExpander"] summary {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
         border-radius: 8px !important;
@@ -60,18 +63,22 @@ st.markdown(
     details[data-testid="stExpander"] summary p,
     details[data-testid="stExpander"] summary div,
     details[data-testid="stExpander"] summary strong,
-    details[data-testid="stExpander"] summary svg {
+    details[data-testid="stExpander"] summary svg,
+    div[data-testid="stExpander"] summary * {
         color: #ffffff !important;
         fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
 
-    details[data-testid="stExpander"] summary:hover {
+    details[data-testid="stExpander"] summary:hover,
+    div[data-testid="stExpander"] summary:hover {
         background-color: #2a2a2a !important;
     }
 
-    /* Expander açıldığında beliren içerik kapsayıcısı */
-    div[data-testid="stExpanderDetails"] {
+    /* Expander açıldığında beliren içerik kapsayıcısı ve alt elemanları */
+    div[data-testid="stExpanderDetails"],
+    div[data-testid="stExpanderDetails"] > div,
+    details[data-testid="stExpander"][open] div {
         background-color: #1e1e1e !important;
         color: #ffffff !important;
         border-top: 1px solid #333333 !important;
@@ -79,8 +86,11 @@ st.markdown(
         border-bottom-right-radius: 8px !important;
     }
     
-    div[data-testid="stExpanderDetails"] * {
+    div[data-testid="stExpanderDetails"] *,
+    div[data-testid="stExpanderDetails"] p,
+    div[data-testid="stExpanderDetails"] span {
         color: #e0e0e0 !important;
+        -webkit-text-fill-color: #e0e0e0 !important;
     }
 
     /* --- CODE BLOKLARI --- */
@@ -177,41 +187,6 @@ st.markdown(
         margin-bottom: 10px;
     }
     </style>
-
-    <script>
-    // Sayfadaki DOM değişikliklerini ve expander açılmalarını anlık yakalayıp koyu renge sabitleyen gözlemci
-    const observer = new MutationObserver(function(mutations) {
-        document.querySelectorAll('div[data-testid="stExpander"], details[data-testid="stExpander"]').forEach(function(el) {
-            el.style.backgroundColor = '#1e1e1e';
-        });
-        document.querySelectorAll('div[data-testid="stExpanderDetails"]').forEach(function(el) {
-            el.style.backgroundColor = '#1e1e1e';
-            el.style.color = '#ffffff';
-        });
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['open', 'class', 'style']
-    });
-
-    // Ekstra güvenlik için tıklama anında da tetikle
-    document.addEventListener('click', function(e) {
-        var expander = e.target.closest('details[data-testid="stExpander"]');
-        if (expander) {
-            setTimeout(function() {
-                expander.style.backgroundColor = '#1e1e1e';
-                var details = expander.querySelector('div[data-testid="stExpanderDetails"]');
-                if (details) {
-                    details.style.backgroundColor = '#1e1e1e';
-                    details.style.color = '#ffffff';
-                }
-            }, 20);
-        }
-    });
-    </script>
     """,
     unsafe_allow_html=True,
 )
