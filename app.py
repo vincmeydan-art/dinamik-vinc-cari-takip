@@ -128,6 +128,18 @@ if not st.session_state["giris_yapildi"]:
                             st.error("Hatalı şifre!")
             else:
                 st.info("Sistemde kayıtlı müşteri bulunmuyor. Lütfen yöneticinin sizi kaydetmesini bekleyin.")
+        
+        # --- GİRİŞ EKRANI ALT BİLGİ (İLETİŞİM VE IBAN) ---
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
+            <div style='background-color: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #333; text-align: center; color: #fff;'>
+                <h5 style='color: #ff9800; margin-bottom: 8px;'>🏗️ DİNAMİK VİNÇ - İLETİŞİM & ÖDEME</h5>
+                <p style='margin: 3px 0; font-size: 13px;'>📞 <b>Cep Tel:</b> 0534 651 65 16</p>
+                <p style='margin: 3px 0; font-size: 13px;'>🏦 <b>Garanti Bankası</b> | 👤 <b>Abdulhamid Toğuşlu</b></p>
+                <p style='margin: 5px 0 0 0; font-size: 14px; color: #4CAF50;'>💳 <code>TR12 0006 2001 1910 0006 8866 91</code></p>
+            </div>
+        """, unsafe_allow_html=True)
+        
     st.stop()
 
 
@@ -260,7 +272,7 @@ with st.sidebar:
     else:
         st.markdown("<h2 style='text-align: center; color: #ff9800;'>🏗️ DİNAMİK VİNÇ</h2>", unsafe_allow_html=True)
     
-    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v3.9 (Cloud)</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-top: 10px;"><span class="pro-badge">PRO EDITION v4.0 (Cloud)</span></div>', unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
     
     menu_options = {
