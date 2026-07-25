@@ -746,10 +746,8 @@ elif secim == "📝 Yeni İş / Operasyon":
             f" {sonraki_saat_basi_artis} TL] {aciklama}"
         )
       else:
-        tam_aciklama = (
-            f"[{ucret_tipi} - {sure} { 'Saat' if 'Saatlik' in ucret_tipi else"
-            f" 'Gün' }] {aciklama}"
-        )
+        zaman_birimi = "Saat" if "Saatlik" in ucret_tipi else "Gün"
+        tam_aciklama = f"[{ucret_tipi} - {sure} {zaman_birimi}] {aciklama}"
 
       if kdv_tipi == "KDV Dahil (%20)":
         toplam_tutar = temel_tutar * 1.20
